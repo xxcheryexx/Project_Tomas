@@ -1,0 +1,882 @@
+ <!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="./resources/ol.css">
+    <link rel="stylesheet" href="resources/fontawesome-all.min.css">
+    <link rel="stylesheet" type="text/css" href="resources/horsey.min.css">
+    <link rel="stylesheet" type="text/css" href="resources/ol-search-layer.min.css">
+    <link href="resources/photon-geocoder-autocomplete.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
+    <link rel="stylesheet" href="./resources/qgis2web.css">
+    <style>
+        html, body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f5f6fa;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+        /* Header Styles */
+        .header {
+            width: 100vw;
+            background: #fff;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0;
+        }
+        .header-title {
+            font-size: 2em;
+            font-weight: bold;
+            color: #222d32;
+            letter-spacing: 1px;
+            margin: 0.7em 0 0.3em 0;
+            text-align: center;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+        .header-filters {
+            display: flex;
+            gap: 1em;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1em;
+        }
+        .header-filters .dropdown {
+            position: relative;
+        }
+        .header-filters select {
+            background: #f0f1f5;
+            color: #222d32;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 0.6em 2.2em 0.6em 1em;
+            font-size: 1em;
+            appearance: none;
+            outline: none;
+            cursor: pointer;
+            min-width: 140px;
+            transition: border 0.2s, background 0.2s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+        .header-filters select:focus, .header-filters select:hover {
+            border: 1.5px solid #3c6382;
+            background: #e9ecef;
+        }
+        .header-filters .dropdown::after {
+            content: '\f078';
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            position: absolute;
+            right: 1em;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #bfc9d1;
+            font-size: 0.9em;
+        }
+        .header-search {
+            display: flex;
+            align-items: center;
+            margin-left: 1em;
+        }
+        .header-search input[type="text"] {
+            background: #fff;
+            color: #222d32;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 0.6em 1em;
+            font-size: 1em;
+            width: 180px;
+            margin-right: 0.5em;
+            transition: border 0.2s;
+        }
+        .header-search input[type="text"]:focus {
+            border: 1.5px solid #3c6382;
+            outline: none;
+        }
+        .header-search button {
+            background: #3c6382;
+            border: none;
+            color: #fff;
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .header-search button:hover, .header-search button:focus {
+            background: #34495e;
+        }
+        /* Main Dashboard Section */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 110px);
+            width: 100vw;
+            margin-top: 110px;
+            background: #f5f6fa;
+        }
+        /* Sidebar styles */
+        .sidebar {
+            background: #fff;
+            color: #222d32;
+            width: 260px;
+            min-width: 200px;
+            max-width: 320px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.08);
+            z-index: 1000;
+            transition: left 0.3s;
+        }
+        .sidebar .sidebar-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 1.2em 1.5em 0.5em 1.5em;
+            letter-spacing: 1px;
+            color: #3c6382;
+        }
+        .sidebar .nav-section {
+            margin: 0.5em 0;
+            flex: 1;
+        }
+        .sidebar .nav-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5em;
+            padding: 0 1.5em;
+        }
+        .sidebar .nav-buttons button {
+            background: #f0f1f5;
+            color: #222d32;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 0.7em 1em;
+            font-size: 1em;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.2s, border 0.2s;
+            outline: none;
+        }
+        .sidebar .nav-buttons button:hover, .sidebar .nav-buttons button:focus {
+            background: #e9ecef;
+            border: 1.5px solid #3c6382;
+            color: #3c6382;
+        }
+        .sidebar .divider {
+            border: none;
+            border-top: 1px solid #e0e4ea;
+            margin: 1.2em 0 1.2em 0;
+        }
+        /* Hamburger for mobile */
+        .sidebar-toggle {
+            display: none;
+            position: absolute;
+            top: 1em;
+            left: 1em;
+            background: #3c6382;
+            color: #fff;
+            border: none;
+            font-size: 1.7em;
+            z-index: 2000;
+            border-radius: 4px;
+            padding: 0.2em 0.5em;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+        /* Dashboard/Map Section */
+        #map {
+            flex: 1;
+            height: 100vh;
+            width: 100%;
+            position: relative;
+            background: #f5f6fa;
+            padding: 1.5em;
+            box-sizing: border-box;
+        }
+        /* Modern Table Styles for Household Data */
+        .household-table-container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto 1.5em auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(60,99,130,0.08);
+            overflow-x: auto;
+            position: static; /* Changed from absolute to static so it does not overlap the map */
+            top: auto;
+            left: auto;
+            transform: none;
+            z-index: 10;
+            padding: 1.2em 1.2em 0.5em 1.2em;
+            display: none; /* Hidden by default, only shown when a polygon is selected */
+            transition: box-shadow 0.2s;
+        }
+        .household-table-container.active {
+            display: block;
+            animation: fadeInTable 0.3s;
+        }
+        @keyframes fadeInTable {
+            from { opacity: 0; transform: translateY(-20px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        .household-table-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #3c6382;
+            margin-bottom: 0.7em;
+            letter-spacing: 0.5px;
+        }
+        .household-table-controls {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.5em;
+            margin-bottom: 0.5em;
+        }
+        .household-table-pagination {
+            display: flex;
+            align-items: center;
+            gap: 0.3em;
+        }
+        .household-table-pagination button {
+            background: #f0f1f5;
+            color: #3c6382;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            padding: 0.3em 0.8em;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.2s, border 0.2s;
+        }
+        .household-table-pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .household-table-scroll-indicator {
+            margin-left: 0.5em;
+            color: #3c6382;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+        }
+        .household-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 0.5em;
+            max-height: 350px;
+            min-width: 700px;
+        }
+        .household-table th, .household-table td {
+            padding: 0.7em 1em;
+            text-align: left;
+            border-bottom: 1px solid #e0e4ea;
+        }
+        .household-table th {
+            background: #f0f1f5;
+            color: #3c6382;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        .household-table tr:last-child td {
+            border-bottom: none;
+        }
+        .household-table tr:nth-child(even) {
+            background: #f9fafb;
+        }
+        .household-table tr:hover {
+            background: #e9ecef;
+        }
+        .household-table-scrollable {
+            max-height: 350px;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+        .household-table-close {
+            position: absolute;
+            top: 1em;
+            right: 1.2em;
+            background: none;
+            border: none;
+            color: #3c6382;
+            font-size: 1.3em;
+            cursor: pointer;
+            z-index: 2;
+            transition: color 0.2s;
+        }
+        .household-table-close:hover {
+            color: #c0392b;
+        }
+        /* Map controls override */
+        .ol-control > * {
+            background-color: #fff!important;
+            color: #3c6382!important;
+            border-radius: 6px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .ol-attribution a, .gcd-gl-input::placeholder, .search-layer-input-search::placeholder {
+            color: #3c6382!important;
+        }
+        .search-layer-input-search {
+            background-color: #f8f8f8!important;
+        }
+        .ol-control > *:focus, .ol-control >*:hover {
+            background-color: #f0f1f5!important;
+        } 
+        .ol-control {
+            background-color: rgba(255,255,255,.4) !important;
+            padding: 2px !important;
+        } 
+        /* Responsive styles */
+        @media (max-width: 900px) {
+            .header {
+                padding: 0.5em 0.5em 0 0.5em;
+            }
+            .header-filters {
+                flex-direction: column;
+                gap: 0.5em;
+                width: 100%;
+            }
+            .main-container {
+                flex-direction: column;
+                margin-top: 110px;
+                height: calc(100vh - 110px);
+            }
+            .sidebar {
+                position: fixed;
+                left: -260px;
+                top: 110px;
+                height: calc(100vh - 110px);
+                z-index: 2000;
+                transition: left 0.3s;
+            }
+            .sidebar.open {
+                left: 0;
+            }
+            .sidebar-toggle {
+                display: block;
+                top: 120px;
+            }
+            #map {
+                width: 100vw;
+                height: 100vh;
+                padding: 0.5em;
+            }
+            .household-table-container {
+                max-width: 98vw;
+                left: 1vw;
+                transform: none;
+                padding: 0.7em 0.3em 0.3em 0.3em;
+            }
+        }
+        /* Instruction message style */
+        .map-instruction-message {
+            position: absolute;
+            top: 1.5em;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #eaf6ff;
+            color: #25618a;
+            border: 1px solid #b5d6f6;
+            border-radius: 8px;
+            padding: 0.7em 1.5em;
+            font-size: 1em;
+            z-index: 20;
+            box-shadow: 0 2px 8px rgba(60,99,130,0.07);
+            display: flex;
+            align-items: center;
+            gap: 0.7em;
+            pointer-events: auto;
+            user-select: none;
+        }
+        .map-instruction-message i {
+            color: #25618a;
+            font-size: 1.2em;
+        }
+        .map-instruction-message .map-instruction-close {
+            margin-left: 1em;
+            background: none;
+            border: none;
+            color: #25618a;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: color 0.2s;
+            pointer-events: auto;
+        }
+        .map-instruction-message .map-instruction-close:hover {
+            color: #c0392b;
+        }
+        @media (max-width: 900px) {
+            .map-instruction-message {
+                font-size: 0.95em;
+                padding: 0.5em 0.7em;
+                top: 0.7em;
+            }
+        }
+        /* Additional style for instruction list */
+        .map-instruction-message ul {
+            margin: 0.3em 0 0 0;
+            padding-left: 1.2em;
+            font-size: 0.97em;
+        }
+        .map-instruction-message li {
+            margin-bottom: 0.2em;
+        }
+    </style>
+    <title>Project Tomas Dashboard</title>
+</head>
+<body>
+    <!-- Header with centered title and filters -->
+    <header class="header" role="banner" aria-label="Header">
+        <div class="header-title">Project Tomas</div>
+        <div class="header-filters">
+            <div class="dropdown">
+                <select id="provinceDropdown" aria-label="Select Province">
+                    <option value="">Province</option>
+                    <option value="province1">Province 1</option>
+                    <option value="province2">Province 2</option>
+                    <option value="province3">Province 3</option>
+                </select>
+            </div>
+            <div class="dropdown">
+                <select id="municipalityDropdown" aria-label="Select Municipality">
+                    <option value="">Municipality</option>
+                    <option value="municipality1">Municipality 1</option>
+                    <option value="municipality2">Municipality 2</option>
+                    <option value="municipality3">Municipality 3</option>
+                </select>
+            </div>
+            <div class="dropdown">
+                <select id="barangayDropdown" aria-label="Select Barangay">
+                    <option value="">Barangays</option>
+                    <option value="barangay1">Barangay 1</option>
+                    <option value="barangay2">Barangay 2</option>
+                    <option value="barangay3">Barangay 3</option>
+                </select>
+            </div>
+            <div class="header-search">
+                <input type="text" id="navbarSearchInput" placeholder="Search..." aria-label="Search">
+                <button id="navbarSearchBtn" aria-label="Search">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Open navigation">&#9776;</button>
+    <div class="main-container">
+        <nav class="sidebar" id="sidebarNav" aria-label="Main navigation">
+            <div class="sidebar-header">Menu</div>
+            <div class="nav-section">
+                <div class="nav-buttons">
+                    <button type="button">Households</button>
+                    <button type="button">Rescuers</button>
+                    <button type="button">ACDVs</button>
+                    <button type="button">Equipments</button>
+                    <button type="button">Roads and Bridges</button>
+                    <button type="button">Evax Center</button>
+                    <button type="button">Hospitals</button>
+                    <button type="button">Buildings</button>
+                    <button type="button">Schools</button>
+                </div>
+                <hr class="divider">
+                <div class="nav-buttons">
+                    <button type="button">Visualization</button>
+                    <button type="button">Materlist</button>
+                    <button type="button">Statistics</button>
+                    <button type="button">Entry Form</button>
+                    <button type="button">Import/export</button>
+                    <button type="button">Acounts</button>
+                </div>
+            </div>
+        </nav>
+        <div id="map">
+            <!-- Instruction message for multi-selection -->
+            <div class="map-instruction-message" id="mapInstructionMsg">
+                <i class="fas fa-info-circle" aria-hidden="true"></i>
+                <span>
+                    <strong>How to select multiple polygons:</strong>
+                    <ul>
+                        <li><b>Click</b> on a polygon to select it. The household data for all selected polygons will be shown below.</li>
+                        <li><b>Click again</b> on a selected polygon to deselect it.</li>
+                        <li>You can select or deselect as many polygons as you want, one at a time, by clicking on them.</li>
+                        <li>To <b>clear all selections</b>, click anywhere on the map background (not on a polygon).</li>
+                        <li><b>Tip:</b> The cursor will change to a pointer when you hover over a selectable polygon.</li>
+                    </ul>
+                </span>
+                <button class="map-instruction-close" id="mapInstructionCloseBtn" aria-label="Close instruction" title="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <!-- Household Table Container (hidden by default, shown only when a polygon is selected) -->
+            <div id="householdTableContainer" class="household-table-container" style="display:none; position: static;">
+                <button class="household-table-close" id="householdTableCloseBtn" aria-label="Close table" title="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="household-table-title">Household Members</div>
+                <div class="household-table-controls">
+                    <div class="household-table-pagination" id="householdTablePagination" style="display:none;">
+                        <button id="householdTablePrevBtn" aria-label="Previous page">&laquo; Prev</button>
+                        <span id="householdTablePageInfo"></span>
+                        <button id="householdTableNextBtn" aria-label="Next page">Next &raquo;</button>
+                    </div>
+                    <span class="household-table-scroll-indicator" title="Scroll table">
+                        <i class="fas fa-arrows-alt-v"></i>
+                    </span>
+                </div>
+                <div class="household-table-scrollable">
+                    <table class="household-table" id="householdTable">
+                        <thead>
+                            <tr>
+                                <th>Family-ID</th>
+                                <!-- <th>Individual-ID</th> removed -->
+                                <th>First Name</th>
+                                <th>Middle Name</th>
+                                <th>Last Name</th>
+                                <th>Age</th>
+                                <th>Sex</th>
+                                <th>Occupation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data rows will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Removed the popup div -->
+        </div>
+    </div>
+    <script>
+    // Navbar search toggle (now always visible, just triggers search)
+    const searchBtn = document.getElementById('navbarSearchBtn');
+    const searchInput = document.getElementById('navbarSearchInput');
+    searchBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (searchInput.value.trim() !== "") {
+            // Implement search logic here
+            alert('Searching for: ' + searchInput.value);
+        } else {
+            searchInput.focus();
+        }
+    });
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && searchInput.value.trim() !== "") {
+            alert('Searching for: ' + searchInput.value);
+        }
+    });
+
+    // Sidebar toggle for mobile
+    const sidebar = document.getElementById('sidebarNav');
+    const toggleBtn = document.getElementById('sidebarToggle');
+    function closeSidebarOnClickOutside(e) {
+        if (window.innerWidth > 900) return;
+        if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
+            sidebar.classList.remove('open');
+        }
+    }
+    toggleBtn.addEventListener('click', function() {
+        sidebar.classList.toggle('open');
+    });
+    // Close sidebar when clicking outside (mobile)
+    document.addEventListener('click', closeSidebarOnClickOutside);
+    // Optional: close sidebar on nav button click (mobile)
+    sidebar.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (window.innerWidth <= 900) sidebar.classList.remove('open');
+        });
+    });
+
+    // --- Instruction message close logic ---
+    const mapInstructionMsg = document.getElementById('mapInstructionMsg');
+    const mapInstructionCloseBtn = document.getElementById('mapInstructionCloseBtn');
+    if (mapInstructionCloseBtn) {
+        mapInstructionCloseBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            mapInstructionMsg.style.display = 'none';
+        });
+    }
+
+    // --- Household Table Logic with Pagination ---
+    // Assumes Households_10.js is loaded and provides a GeoJSON object named 'json_Households_10'
+    // and that the OpenLayers map is initialized as 'map' and the layer as 'lyr_Households_10_3' (default qgis2web naming)
+    // If your layer variable is named differently, adjust accordingly.
+
+    // Helper: get the OpenLayers map and Households layer
+    function getMapAndHouseholdsLayer() {
+        let map = window.map;
+        let householdsLayer = null;
+        if (window.lyr_Households_10_3) {
+            householdsLayer = window.lyr_Households_10_3;
+        } else if (window.lyr_Households_10) {
+            householdsLayer = window.lyr_Households_10;
+        } else if (window.layersList) {
+            for (let lyr of window.layersList) {
+                if (lyr && lyr.get('title') && lyr.get('title').toLowerCase().includes('household')) {
+                    householdsLayer = lyr;
+                    break;
+                }
+            }
+        }
+        return { map, householdsLayer };
+    }
+
+    // Helper: extract household data from feature properties
+    function extractHouseholdMembers(properties) {
+        if (Array.isArray(properties.members)) {
+            return properties.members;
+        }
+        const member = {};
+        member['Family-ID'] = properties['FAMILY-ID'] || properties['FamilyID'] || properties['family_id'] || properties['familyid'] || '';
+        // member['Individual-ID'] = properties['INDIVIDUAL-ID'] || properties['IndividualID'] || properties['individual_id'] || properties['individualid'] || '';
+        member['First Name'] = properties['GIVEN NAME'] || properties['FirstName'] || properties['first_name'] || properties['firstname'] || '';
+        member['Middle Name'] = properties['MIDDLE NAME'] || properties['MiddleName'] || properties['middle_name'] || properties['middlename'] || '';
+        member['Last Name'] = properties['LAST NAME'] || properties['LastName'] || properties['last_name'] || properties['lastname'] || '';
+        member['Age'] = properties['AGE'] || properties['age'] || '';
+        member['Sex'] = properties['SEX'] || properties['sex'] || '';
+        member['Occupation'] = properties['OCCUPATION'] || properties['occupation'] || '';
+        if (Object.values(member).some(v => v !== '')) {
+            return [member];
+        }
+        return [];
+    }
+
+    // Pagination state
+    let householdTableMembers = [];
+    let householdTablePage = 1;
+    const householdTablePageSize = 10;
+
+    // Render the household table (no Individual-ID column), paginated
+    function renderHouseholdTable(members) {
+        const container = document.getElementById('householdTableContainer');
+        const tbody = document.getElementById('householdTable').querySelector('tbody');
+        const pagination = document.getElementById('householdTablePagination');
+        const pageInfo = document.getElementById('householdTablePageInfo');
+        const prevBtn = document.getElementById('householdTablePrevBtn');
+        const nextBtn = document.getElementById('householdTableNextBtn');
+
+        householdTableMembers = Array.isArray(members) ? members : [];
+        // Reset to first page if new data
+        householdTablePage = 1;
+
+        function updateTable() {
+            tbody.innerHTML = '';
+            let total = householdTableMembers.length;
+            let pageCount = Math.ceil(total / householdTablePageSize);
+            if (!total) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = 7;
+                td.style.textAlign = 'center';
+                td.textContent = 'No household data found.';
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+                pagination.style.display = 'none';
+            } else {
+                let start = (householdTablePage - 1) * householdTablePageSize;
+                let end = Math.min(start + householdTablePageSize, total);
+                for (let i = start; i < end; i++) {
+                    const member = householdTableMembers[i];
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${member['Family-ID'] ?? ''}</td>
+                        <td>${member['First Name'] ?? ''}</td>
+                        <td>${member['Middle Name'] ?? ''}</td>
+                        <td>${member['Last Name'] ?? ''}</td>
+                        <td>${member['Age'] ?? ''}</td>
+                        <td>${member['Sex'] ?? ''}</td>
+                        <td>${member['Occupation'] ?? ''}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+                // Show pagination only if more than one page
+                if (pageCount > 1) {
+                    pagination.style.display = 'flex';
+                    pageInfo.textContent = `Page ${householdTablePage} of ${pageCount}`;
+                    prevBtn.disabled = householdTablePage === 1;
+                    nextBtn.disabled = householdTablePage === pageCount;
+                } else {
+                    pagination.style.display = 'none';
+                }
+            }
+            container.classList.add('active');
+            container.style.display = 'block';
+        }
+
+        // Attach event listeners for pagination
+        prevBtn.onclick = function() {
+        tbody.innerHTML = '';
+        if (!members || members.length === 0) {
+            const tr = document.createElement('tr');
+            const td = document.createElement('td');
+            td.colSpan = 7;
+            td.style.textAlign = 'center';
+            td.textContent = 'No household data found.';
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+        } else {
+            for (const member of members) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${member['Family-ID'] ?? ''}</td>
+                    <td>${member['First Name'] ?? ''}</td>
+                    <td>${member['Middle Name'] ?? ''}</td>
+                    <td>${member['Last Name'] ?? ''}</td>
+                    <td>${member['Age'] ?? ''}</td>
+                    <td>${member['Sex'] ?? ''}</td>
+                    <td>${member['Occupation'] ?? ''}</td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+        container.classList.add('active');
+        container.style.display = 'block';
+    }
+
+    // Hide the household table
+    function hideHouseholdTable() {
+        const container = document.getElementById('householdTableContainer');
+        container.classList.remove('active');
+        container.style.display = 'none';
+        // Optionally clear table rows
+        const tbody = document.getElementById('householdTable').querySelector('tbody');
+        if (tbody) tbody.innerHTML = '';
+    }
+
+    // --- Polygon selection logic ---
+    // Show table when one or more polygons are selected, and allow multiple selection
+    function setupPolygonSelection() {
+        const { map, householdsLayer } = getMapAndHouseholdsLayer();
+        if (!map || !householdsLayer) {
+            setTimeout(setupPolygonSelection, 500);
+            return;
+        }
+
+        // Add select interaction if not already present
+        let selectInteraction = null;
+        if (window.householdSelectInteraction) {
+            selectInteraction = window.householdSelectInteraction;
+        } else if (typeof ol !== "undefined" && ol.interaction && ol.interaction.Select) {
+            selectInteraction = new ol.interaction.Select({
+                layers: [householdsLayer],
+                style: null, // Use default or custom style if needed
+                multi: true, // Enable multiple selection
+                // By default, ctrl/cmd+click for multi, but we will allow always multi below
+            });
+            map.addInteraction(selectInteraction);
+            window.householdSelectInteraction = selectInteraction;
+        }
+
+        // Hide table initially
+        hideHouseholdTable();
+
+        // Listen for selection changes
+        if (selectInteraction) {
+            selectInteraction.on('select', function(e) {
+                const selected = selectInteraction.getFeatures().getArray();
+                if (selected && selected.length > 0) {
+                    // Collect all members from all selected features
+                    let allMembers = [];
+                    for (let feat of selected) {
+                        let props = typeof feat.get === "function" ? feat.getProperties() : feat.properties || {};
+                        if (props.geometry) delete props.geometry;
+                        let members = extractHouseholdMembers(props);
+                        if (members.length === 0 && Array.isArray(props.household_members)) {
+                            members = props.household_members;
+                        }
+                        // If members is an array of arrays, flatten
+                        if (Array.isArray(members[0])) {
+                            members = members.flat();
+                        }
+                        allMembers = allMembers.concat(members);
+                    }
+                    renderHouseholdTable(allMembers);
+                } else {
+                    hideHouseholdTable();
+                }
+            });
+
+            // Make selection always multi (no need for ctrl/cmd)
+            // This is a workaround for OpenLayers default behavior
+            // We will handle click events to toggle selection
+            const selectFeatures = selectInteraction.getFeatures();
+            map.on('singleclick', function(evt) {
+                let featureFound = false;
+                map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
+                    if (layer === householdsLayer) {
+                        featureFound = true;
+                        if (selectFeatures.getArray().indexOf(feature) === -1) {
+                            selectFeatures.push(feature);
+                        } else {
+                            selectFeatures.remove(feature);
+                        }
+                        // Prevent default OL select from toggling all
+                        return true;
+                    }
+                });
+                // If click not on a polygon, clear selection
+                if (!featureFound) {
+                    selectFeatures.clear();
+                }
+            });
+        }
+
+        // --- Change cursor to hand when hovering over a polygon ---
+        map.on('pointermove', function(evt) {
+            if (evt.dragging) return;
+            let hit = false;
+            map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
+                if (layer === householdsLayer) {
+                    hit = true;
+                    return true;
+                }
+            });
+            map.getTargetElement().style.cursor = hit ? 'pointer' : '';
+        });
+    }
+
+    // Wait for map and layer to be ready, then setup polygon selection
+    window.addEventListener('load', function() {
+        setupPolygonSelection();
+    });
+
+    </script>
+    <script src="resources/qgis2web_expressions.js"></script>
+    <script src="./resources/functions.js"></script>
+    <script src="./resources/ol.js"></script>
+    <script src="resources/horsey.min.js"></script>
+    <script src="resources/ol-search-layer.js"></script>
+    <script src="./resources/ol-layerswitcher.js"></script>
+    <script src="resources/photon-geocoder-autocomplete.min.js"></script>
+    <script src="layers/MunicipalBoundary_8.js"></script><script src="layers/Roads_9.js"></script><script src="layers/Households_10.js"></script>
+    <script src="styles/MunicipalBoundary_8_style.js"></script><script src="styles/Roads_9_style.js"></script><script src="styles/Households_10_style.js"></script>
+    <script src="./layers/layers.js" type="text/javascript"></script> 
+    <script src="./resources/Autolinker.min.js"></script>
+    <script src="./resources/qgis2web.js"></script>
+</body>
+</html>
