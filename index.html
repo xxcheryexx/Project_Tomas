@@ -355,6 +355,54 @@
                 padding: 0.7em 0.3em 0.3em 0.3em;
             }
         }
+        /* Instruction message style */
+        .map-instruction-message {
+            position: absolute;
+            top: 1.5em;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #eaf6ff;
+            color: #25618a;
+            border: 1px solid #b5d6f6;
+            border-radius: 8px;
+            padding: 0.7em 1.5em;
+            font-size: 1em;
+            z-index: 20;
+            box-shadow: 0 2px 8px rgba(60,99,130,0.07);
+            display: flex;
+            align-items: center;
+            gap: 0.7em;
+            pointer-events: none;
+            user-select: none;
+        }
+        .map-instruction-message i {
+            color: #25618a;
+            font-size: 1.2em;
+        }
+        @media (max-width: 900px) {
+            .map-instruction-message {
+                font-size: 0.95em;
+                padding: 0.5em 0.7em;
+                top: 0.7em;
+            }
+        }
+        /* Additional style for instruction list */
+        .map-instruction-message ul {
+            margin: 0.3em 0 0 0;
+            padding-left: 1.2em;
+            font-size: 0.97em;
+        }
+        .map-instruction-message li {
+            margin-bottom: 0.2em;
+        }
+        /* Box selection rectangle style */
+        .ol-box-select-rectangle {
+            border: 2px dashed #3c6382;
+            background: rgba(60,99,130,0.08);
+            position: absolute;
+            pointer-events: none;
+            z-index: 10000;
+        }
     </style>
     <title>Project Tomas Dashboard</title>
 </head>
@@ -423,6 +471,21 @@
             </div>
         </nav>
         <div id="map">
+            <!-- Instruction message for multi-selection -->
+            <div class="map-instruction-message" id="mapInstructionMsg">
+                <i class="fas fa-info-circle" aria-hidden="true"></i>
+                <span>
+                    <strong>How to select multiple polygons:</strong>
+                    <ul>
+                        <li><b>Click</b> on a polygon to select it. The household data for all selected polygons will be shown below.</li>
+                        <li><b>Click again</b> on a selected polygon to deselect it.</li>
+                        <li>You can select or deselect as many polygons as you want, one at a time, by clicking on them.</li>
+                        <li>To <b>clear all selections</b>, click anywhere on the map background (not on a polygon).</li>
+                        <li><b>Tip:</b> The cursor will change to a pointer when you hover over a selectable polygon.</li>
+                        <li><b>Long-press and drag</b> on the map to draw a box and select all polygons inside the box.</li>
+                    </ul>
+                </span>
+            </div>
             <!-- Household Table Container (hidden by default, shown only when a polygon is selected) -->
             <div id="householdTableContainer" class="household-table-container" style="display:none;">
                 <div class="household-table-title">Household Members</div>
@@ -447,6 +510,7 @@
                 </div>
             </div>
             <!-- Removed the popup div -->
+            <!-- Box selection rectangle (will be created dynamically) -->
         </div>
     </div>
     <script>
@@ -664,6 +728,164 @@
                 }
             });
             map.getTargetElement().style.cursor = hit ? 'pointer' : '';
+        });
+
+        // --- Box selection logic (long-press and drag) ---
+        // This is a custom implementation for long-press (400ms) and drag to select polygons in a box
+        let boxSelect = {
+            isLongPress: false,
+            isDragging: false,
+            startPixel: null,
+            endPixel: null,
+            timer: null,
+            boxDiv: null
+        };
+
+        const mapTarget = map.getTargetElement();
+
+        function getRelativeMousePos(e) {
+            // e is a MouseEvent
+            const rect = mapTarget.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+
+        function createBoxDiv() {
+            let div = document.createElement('div');
+            div.className = 'ol-box-select-rectangle';
+            div.style.display = 'none';
+            mapTarget.appendChild(div);
+            return div;
+        }
+
+        function showBoxDiv(start, end) {
+            if (!boxSelect.boxDiv) boxSelect.boxDiv = createBoxDiv();
+            const x1 = Math.min(start.x, end.x);
+            const y1 = Math.min(start.y, end.y);
+            const x2 = Math.max(start.x, end.x);
+            const y2 = Math.max(start.y, end.y);
+            boxSelect.boxDiv.style.left = x1 + 'px';
+            boxSelect.boxDiv.style.top = y1 + 'px';
+            boxSelect.boxDiv.style.width = (x2 - x1) + 'px';
+            boxSelect.boxDiv.style.height = (y2 - y1) + 'px';
+            boxSelect.boxDiv.style.display = 'block';
+        }
+
+        function hideBoxDiv() {
+            if (boxSelect.boxDiv) {
+                boxSelect.boxDiv.style.display = 'none';
+            }
+        }
+
+        function clearBoxSelectState() {
+            boxSelect.isLongPress = false;
+            boxSelect.isDragging = false;
+            boxSelect.startPixel = null;
+            boxSelect.endPixel = null;
+            if (boxSelect.timer) {
+                clearTimeout(boxSelect.timer);
+                boxSelect.timer = null;
+            }
+            hideBoxDiv();
+        }
+
+        // Mouse event handlers for box selection
+        mapTarget.addEventListener('mousedown', function(e) {
+            if (e.button !== 0) return; // Only left mouse button
+            // Prevent interfering with map controls
+            if (e.target.closest('.ol-control')) return;
+            boxSelect.startPixel = getRelativeMousePos(e);
+            boxSelect.isLongPress = false;
+            boxSelect.isDragging = false;
+            boxSelect.timer = setTimeout(function() {
+                boxSelect.isLongPress = true;
+                boxSelect.isDragging = true;
+                boxSelect.endPixel = boxSelect.startPixel;
+                showBoxDiv(boxSelect.startPixel, boxSelect.endPixel);
+            }, 400); // 400ms for long-press
+        });
+
+        mapTarget.addEventListener('mousemove', function(e) {
+            if (boxSelect.isDragging && boxSelect.isLongPress) {
+                boxSelect.endPixel = getRelativeMousePos(e);
+                showBoxDiv(boxSelect.startPixel, boxSelect.endPixel);
+            }
+        });
+
+        mapTarget.addEventListener('mouseup', function(e) {
+            if (boxSelect.timer) {
+                clearTimeout(boxSelect.timer);
+                boxSelect.timer = null;
+            }
+            if (boxSelect.isDragging && boxSelect.isLongPress) {
+                boxSelect.endPixel = getRelativeMousePos(e);
+                hideBoxDiv();
+                // Perform box selection
+                const pixel1 = [boxSelect.startPixel.x, boxSelect.startPixel.y];
+                const pixel2 = [boxSelect.endPixel.x, boxSelect.endPixel.y];
+                const minX = Math.min(pixel1[0], pixel2[0]);
+                const minY = Math.min(pixel1[1], pixel2[1]);
+                const maxX = Math.max(pixel1[0], pixel2[0]);
+                const maxY = Math.max(pixel1[1], pixel2[1]);
+                // Get extent in map coordinates
+                const coord1 = map.getCoordinateFromPixel([minX, minY]);
+                const coord2 = map.getCoordinateFromPixel([maxX, maxY]);
+                const extent = [
+                    Math.min(coord1[0], coord2[0]),
+                    Math.min(coord1[1], coord2[1]),
+                    Math.max(coord1[0], coord2[0]),
+                    Math.max(coord1[1], coord2[1])
+                ];
+                // Select all polygons in the box
+                const featuresInBox = [];
+                householdsLayer.getSource().forEachFeature(function(feature) {
+                    if (feature.getGeometry().intersectsExtent(extent)) {
+                        featuresInBox.push(feature);
+                    }
+                });
+                // Add to selection (union with current selection)
+                const selectFeatures = selectInteraction.getFeatures();
+                // Remove duplicates
+                featuresInBox.forEach(f => {
+                    if (selectFeatures.getArray().indexOf(f) === -1) {
+                        selectFeatures.push(f);
+                    }
+                });
+                // Show table for all selected
+                if (selectFeatures.getLength() > 0) {
+                    let allMembers = [];
+                    selectFeatures.forEach(function(feat) {
+                        let props = typeof feat.get === "function" ? feat.getProperties() : feat.properties || {};
+                        if (props.geometry) delete props.geometry;
+                        let members = extractHouseholdMembers(props);
+                        if (members.length === 0 && Array.isArray(props.household_members)) {
+                            members = props.household_members;
+                        }
+                        if (Array.isArray(members[0])) {
+                            members = members.flat();
+                        }
+                        allMembers = allMembers.concat(members);
+                    });
+                    renderHouseholdTable(allMembers);
+                } else {
+                    hideHouseholdTable();
+                }
+            }
+            clearBoxSelectState();
+        });
+
+        // If mouse leaves the map while dragging, cancel box selection
+        mapTarget.addEventListener('mouseleave', function(e) {
+            clearBoxSelectState();
+        });
+
+        // Prevent map drag-pan while box selecting
+        map.on('pointerdrag', function(evt) {
+            if (boxSelect.isDragging && boxSelect.isLongPress) {
+                evt.preventDefault();
+            }
         });
     }
 
