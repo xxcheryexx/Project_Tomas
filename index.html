@@ -1,959 +1,830 @@
- <!doctype html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="stylesheet" href="./resources/ol.css">
-    <link rel="stylesheet" href="resources/fontawesome-all.min.css">
-    <link rel="stylesheet" type="text/css" href="resources/horsey.min.css">
-    <link rel="stylesheet" type="text/css" href="resources/ol-search-layer.min.css">
-    <link href="resources/photon-geocoder-autocomplete.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
-    <link rel="stylesheet" href="./resources/qgis2web.css">
-    <style>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="./resources/ol.css">
+        <link rel="stylesheet" href="resources/fontawesome-all.min.css">
+        <link href="resources/photon-geocoder-autocomplete.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
+        <link rel="stylesheet" href="./resources/qgis2web.css">
+        <style>
         html, body {
-            font-family: Arial, Helvetica, sans-serif;
-            background-color: #f5f6fa;
-            height: 100%;
-            margin: 0;
-            padding: 0;
+            background-color: #ffffff;
         }
-        body {
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-        }
-        /* Header Styles */
-        .header {
-            width: 100vw;
-            background: #fff;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.10);
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 3000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0;
-        }
-        .header-title {
-            font-size: 2em;
-            font-weight: bold;
-            color: #222d32;
-            letter-spacing: 1px;
-            margin: 0.7em 0 0.3em 0;
-            text-align: center;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.07);
-        }
-        .header-filters {
-            display: flex;
-            gap: 1em;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 1em;
-        }
-        .header-filters .dropdown {
-            position: relative;
-        }
-        .header-filters select {
-            background: #f0f1f5;
-            color: #222d32;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            padding: 0.6em 2.2em 0.6em 1em;
-            font-size: 1em;
-            appearance: none;
-            outline: none;
-            cursor: pointer;
-            min-width: 140px;
-            transition: border 0.2s, background 0.2s;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-        }
-        .header-filters select:focus, .header-filters select:hover {
-            border: 1.5px solid #3c6382;
-            background: #e9ecef;
-        }
-        .header-filters .dropdown::after {
-            content: '\f078';
-            font-family: "Font Awesome 5 Free";
-            font-weight: 900;
-            position: absolute;
-            right: 1em;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-            color: #bfc9d1;
-            font-size: 0.9em;
-        }
-        .header-search {
-            display: flex;
-            align-items: center;
-            margin-left: 1em;
-        }
-        .header-search input[type="text"] {
-            background: #fff;
-            color: #222d32;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            padding: 0.6em 1em;
-            font-size: 1em;
-            width: 180px;
-            margin-right: 0.5em;
-            transition: border 0.2s;
-        }
-        .header-search input[type="text"]:focus {
-            border: 1.5px solid #3c6382;
-            outline: none;
-        }
-        .header-search button {
-            background: #3c6382;
-            border: none;
-            color: #fff;
-            border-radius: 50%;
-            width: 38px;
-            height: 38px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2em;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .header-search button:hover, .header-search button:focus {
-            background: #34495e;
-        }
-        /* Main Dashboard Section */
-        .main-container {
-            display: flex;
-            height: calc(100vh - 110px);
-            width: 100vw;
-            margin-top: 110px;
-            background: #f5f6fa;
-        }
-        /* Sidebar styles */
-        .sidebar {
-            background: #fff;
-            color: #222d32;
-            width: 260px;
-            min-width: 200px;
-            max-width: 320px;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 0;
-            box-shadow: 2px 0 8px rgba(0,0,0,0.08);
-            z-index: 1000;
-            transition: left 0.3s;
-        }
-        .sidebar .sidebar-header {
-            font-size: 1.2em;
-            font-weight: bold;
-            padding: 1.2em 1.5em 0.5em 1.5em;
-            letter-spacing: 1px;
-            color: #3c6382;
-        }
-        .sidebar .nav-section {
-            margin: 0.5em 0;
-            flex: 1;
-        }
-        .sidebar .nav-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5em;
-            padding: 0 1.5em;
-        }
-        .sidebar .nav-buttons button {
-            background: #f0f1f5;
-            color: #222d32;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            padding: 0.7em 1em;
-            font-size: 1em;
-            text-align: left;
-            cursor: pointer;
-            transition: background 0.2s, border 0.2s;
-            outline: none;
-        }
-        .sidebar .nav-buttons button:hover, .sidebar .nav-buttons button:focus {
-            background: #e9ecef;
-            border: 1.5px solid #3c6382;
-            color: #3c6382;
-        }
-        .sidebar .divider {
-            border: none;
-            border-top: 1px solid #e0e4ea;
-            margin: 1.2em 0 1.2em 0;
-        }
-        /* Hamburger for mobile */
-        .sidebar-toggle {
-            display: none;
-            position: absolute;
-            top: 1em;
-            left: 1em;
-            background: #3c6382;
-            color: #fff;
-            border: none;
-            font-size: 1.7em;
-            z-index: 2000;
-            border-radius: 4px;
-            padding: 0.2em 0.5em;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-        }
-        /* Dashboard/Map Section */
-        #map {
-            flex: 1;
-            height: 100vh;
-            width: 100%;
-            position: relative;
-            background: #f5f6fa;
-            padding: 1.5em;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-        }
-        /* Modern Table Styles for Household Data */
-        .household-table-container {
-            width: 100%;
-            max-width: 1100px;
-            margin: 0 auto 1.5em auto;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 24px rgba(60,99,130,0.08);
-            overflow-x: auto;
-            /* position: static;  Table is static, not overlapping the map */
-            position: relative;
-            top: 0;
-            left: 0;
-            transform: none;
-            z-index: 20;
-            padding: 1.2em 1.2em 0.5em 1.2em;
-            display: none; /* Hidden by default, only shown when a polygon is selected */
-            transition: box-shadow 0.2s;
-        }
-        .household-table-container.active {
-            display: block;
-            animation: fadeInTable 0.3s;
-        }
-        @keyframes fadeInTable {
-            from { opacity: 0; transform: translateY(-20px);}
-            to { opacity: 1; transform: translateY(0);}
-        }
-        .household-table-title {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #3c6382;
-            margin-bottom: 0.7em;
-            letter-spacing: 0.5px;
-        }
-        .household-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            background: #fff;
-            border-radius: 8px;
-            overflow: hidden;
-            margin-bottom: 0.5em;
-        }
-        .household-table th, .household-table td {
-            padding: 0.7em 1em;
-            text-align: left;
-            border-bottom: 1px solid #e0e4ea;
-        }
-        .household-table th {
-            background: #f0f1f5;
-            color: #3c6382;
-            font-weight: bold;
-            position: sticky;
-            top: 0;
-            z-index: 1;
-        }
-        .household-table tr:last-child td {
-            border-bottom: none;
-        }
-        .household-table tr:nth-child(even) {
-            background: #f9fafb;
-        }
-        .household-table tr:hover {
-            background: #e9ecef;
-        }
-        .household-table-close {
-            position: absolute;
-            top: 1em;
-            right: 1.2em;
-            background: none;
-            border: none;
-            color: #3c6382;
-            font-size: 1.3em;
-            cursor: pointer;
-            z-index: 2;
-            transition: color 0.2s;
-        }
-        .household-table-close:hover {
-            color: #c0392b;
-        }
-        /* Add scroll to table body if more than 10 rows */
-        .household-table-scroll {
-            max-height: 420px; /* 10 rows * ~42px per row */
-            overflow-y: auto;
-            width: 100%;
-        }
-        /* Map controls override */
         .ol-control > * {
-            background-color: #fff!important;
-            color: #3c6382!important;
-            border-radius: 6px;
-            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f8f8f8!important;
+            color: #444444!important;
+            border-radius: 0px;
         }
         .ol-attribution a, .gcd-gl-input::placeholder, .search-layer-input-search::placeholder {
-            color: #3c6382!important;
+            color: #444444!important;
         }
         .search-layer-input-search {
             background-color: #f8f8f8!important;
         }
         .ol-control > *:focus, .ol-control >*:hover {
-            background-color: #f0f1f5!important;
+            background-color: rgba(248, 248, 248, 0.7)!important;
         } 
         .ol-control {
             background-color: rgba(255,255,255,.4) !important;
             padding: 2px !important;
         } 
-        /* Responsive styles */
-        @media (max-width: 900px) {
-            .header {
-                padding: 0.5em 0.5em 0 0.5em;
-            }
-            .header-filters {
-                flex-direction: column;
-                gap: 0.5em;
-                width: 100%;
-            }
-            .main-container {
-                flex-direction: column;
-                margin-top: 110px;
-                height: calc(100vh - 110px);
-            }
-            .sidebar {
-                position: fixed;
-                left: -260px;
-                top: 110px;
-                height: calc(100vh - 110px);
-                z-index: 2000;
-                transition: left 0.3s;
-            }
-            .sidebar.open {
-                left: 0;
-            }
-            .sidebar-toggle {
-                display: block;
-                top: 120px;
-            }
-            #map {
-                width: 100vw;
-                height: 100vh;
-                padding: 0.5em;
-            }
-            .household-table-container {
-                max-width: 98vw;
-                left: 1vw;
-                transform: none;
-                padding: 0.7em 0.3em 0.3em 0.3em;
-            }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        /* Instruction message style */
-        .map-instruction-message {
-            position: absolute;
-            top: 1.5em;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #eaf6ff;
-            color: #25618a;
-            border: 1px solid #b5d6f6;
-            border-radius: 8px;
-            padding: 0.7em 1.5em;
-            font-size: 1em;
-            z-index: 20;
-            box-shadow: 0 2px 8px rgba(60,99,130,0.07);
+
+        #main-wrapper {
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        #left-pane {
+            width: 270px;
+            background: #23272f;
+            color: #fff;
+            height: 100vh;
+            box-shadow: 2px 0 8px rgba(34,34,34,0.04);
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            z-index: 10;
+        }
+        .sidebar-header {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: left;
+            padding: 2.2rem 2rem 1rem 2rem;
+            letter-spacing: 0.5px;
+            border-bottom: none;
+            color: #fafafa;
+        }
+        .sidebar-header span {
+            border-bottom: 3px solid #24b2ff;
+            padding-bottom: 0.3rem;
+            color: #24b2ff;
+            font-size: 1.6rem;
+            display: inline-block;
+            letter-spacing:1px;
+        }
+        .sidebar-header.flood-header {
+            /* Same as .sidebar-header but separate class for Flood Extent */
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: left;
+            padding: 2.2rem 2rem 1rem 2rem;
+            letter-spacing: 0.5px;
+            border-bottom: none;
+            color: #fafafa;
+        }
+        .sidebar-header.flood-header span {
+            border-bottom: 3px solid #f39c12;
+            padding-bottom: 0.3rem;
+            color: #f39c12;
+            font-size: 1.6rem;
+            display: inline-block;
+            letter-spacing:1px;
+        }
+        .nav-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            padding: 0 1.4rem;
+        }
+        .nav-btn {
             display: flex;
             align-items: center;
-            gap: 0.7em;
-            pointer-events: none;
-            user-select: none;
+            gap: 1.2rem;
+            padding: 1rem 1.2rem;
+            font-size: 1.17rem;
+            font-weight: 600;
+            border: none;
+            outline: none;
+            background: none;
+            color: #fafafa;
+            transition: background 0.18s, color 0.18s;
+            border-radius: 10px;
+            cursor: pointer;
+            letter-spacing: 1px;
         }
-        .map-instruction-message.hide {
-            display: none !important;
+        .nav-btn i {
+            font-size: 1.5rem;
         }
-        .map-instruction-message i {
-            color: #25618a;
-            font-size: 1.2em;
+        .nav-btn:hover, .nav-btn.active {
+            background: #24b2ff;
+            color: #fff;
         }
-        @media (max-width: 900px) {
-            .map-instruction-message {
-                font-size: 0.95em;
-                padding: 0.5em 0.7em;
-                top: 0.7em;
+        /* Flood hazard section style */
+        .flood-section {
+            margin-top: 2.5rem;
+        }
+        .flood-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            margin: 0 2rem 1.4rem 2rem;
+        }
+        .flood-form-label {
+            font-size: 1.03rem;
+            color: #f39c12;
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+            margin-left: 2px;
+            letter-spacing: 0.5px;
+        }
+        .flood-modern-select {
+            padding: 0.6rem 1rem;
+            border: none;
+            border-radius: 8px;
+            background: #262a33;
+            color: #fafafa;
+            font-size: 1.08rem;
+            font-weight: 500;
+            outline: none;
+            transition: background 0.14s;
+            min-width: 135px;
+            box-shadow: 0 0 0 1px #222326;
+        }
+        .flood-modern-select:focus {
+            background: #181b1f;
+            box-shadow: 0 0 0 1.5px #f39c12;
+        }
+        .flood-divider {
+            border: none;
+            border-top: 2px solid #444;
+            margin: 1.2rem 2rem 0.5rem 2rem;
+        }
+
+        /* Top Pane Styles */
+        #top-pane {
+            position: fixed;
+            left: 270px;
+            top: 0;
+            right: 0;
+            height: 72px;
+            background: #23272f;
+            color: #fafafa;
+            display: flex;
+            align-items: center;
+            z-index: 9;
+            box-shadow: 0 2px 8px rgba(34,34,34,0.04);
+            padding-left: 2.5rem;
+            padding-right: 3rem;
+        }
+        .search-form {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 600px;
+            margin-left: 0;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        .form-label {
+            font-size: 1.03rem;
+            color: #24b2ff;
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+            margin-left: 2px;
+            letter-spacing: 0.5px;
+        }
+        .modern-select {
+            padding: 0.6rem 1rem;
+            border: none;
+            border-radius: 8px;
+            background: #262a33;
+            color: #fafafa;
+            font-size: 1.08rem;
+            font-weight: 500;
+            outline: none;
+            transition: background 0.14s;
+            min-width: 135px;
+            box-shadow: 0 0 0 1px #222326;
+        }
+        .modern-select:focus {
+            background: #181b1f;
+            box-shadow: 0 0 0 1.5px #24b2ff;
+        }
+        .search-btn {
+            padding: 0.65rem 2.1rem;
+            border: none;
+            border-radius: 10px;
+            background: #24b2ff;
+            color: #fff;
+            font-size: 1.13rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: background 0.12s, box-shadow 0.15s;
+            margin-left: 1.4rem;
+            box-shadow: 0 2px 8px rgba(36,178,255,0.09);
+        }
+        .search-btn:hover {
+            background: #189fd1;
+            box-shadow: 0 2px 14px rgba(36,178,255,0.13);
+        }
+
+        /* Modern Data Table for Household */
+        #household-data-table-container {
+            position: fixed;
+            left: 270px;
+            top: 72px;
+            right: 0;
+            z-index: 15;
+            background: #fafcff;
+            display: none;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.10), 0 0px 0px rgba(0,0,0,0);
+            border-bottom: 1px solid #dde2ec;
+            padding: 1.3rem 2.3rem 1.2rem 2.3rem;
+        }
+        @media only screen and (max-width: 700px) {
+            #household-data-table-container { 
+                left: 95px; 
+                top: 60px; 
+                padding: 0.5rem 0.6rem 0.6rem 0.6rem;
             }
         }
-        /* Additional style for instruction list */
-        .map-instruction-message ul {
-            margin: 0.3em 0 0 0;
-            padding-left: 1.2em;
-            font-size: 0.97em;
+        .modern-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 11px;
+            overflow: hidden;
+            font-size: 1.03rem;
+            margin-top: 0;
+            margin-bottom: 0;
+            box-shadow: 0 2px 9px rgba(0,0,0,0.08);
         }
-        .map-instruction-message li {
-            margin-bottom: 0.2em;
+        .modern-table thead {
+            background: #24b2ff;
+            color: #fff;
         }
-        /* Box selection rectangle style */
-        .ol-box-select-rectangle {
-            border: 2px dashed #3c6382;
-            background: rgba(60,99,130,0.08);
-            position: absolute;
-            pointer-events: none;
-            z-index: 10000;
+        .modern-table th, .modern-table td {
+            padding: 0.82rem 1.15rem;
+            text-align: left;
+            border-bottom: 1px solid #dde2ec;
         }
-    </style>
-    <title>Project Tomas Dashboard</title>
-</head>
-<body>
-    <!-- Header with centered title and filters -->
-    <header class="header" role="banner" aria-label="Header">
-        <div class="header-title">Project Tomas</div>
-        <div class="header-filters">
-            <div class="dropdown">
-                <select id="provinceDropdown" aria-label="Select Province">
-                    <option value="">Province</option>
-                    <option value="province1">Province 1</option>
-                    <option value="province2">Province 2</option>
-                    <option value="province3">Province 3</option>
-                </select>
+        .modern-table th {
+            font-weight: 700;
+            font-size: 1.04rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .modern-table tr:last-child td {
+            border-bottom: none;
+        }
+        .modern-table tbody tr:hover {
+            background: #e6f4ff;
+        }
+        .modern-table .empty-message {
+            text-align: center;
+            font-style: italic;
+            color: #aaa;
+        }
+        #close-household-table-btn {
+            background: none;
+            border: none;
+            color: #777;
+            font-size: 1.5rem;
+            float: right;
+            cursor: pointer;
+            margin-top: -0.2rem;
+            margin-right: -0.4rem;
+            transition: color 0.18s;
+        }
+        #close-household-table-btn:hover {
+            color: #24b2ff;
+        }
+
+        /* push map down to not overlap with top bar */
+        #map-container {
+            flex: 1 1 0%;
+            height: calc(100vh - 72px);
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            margin-top: 72px;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+
+        @media only screen and (max-width: 700px) {
+
+            #left-pane { width: 95px; }
+            #top-pane { left: 95px; height: 60px; padding-left: 1rem; }
+            .sidebar-header, .sidebar-header.flood-header { font-size: 1.15rem; padding: 1.2rem 1rem 1rem 1rem; }
+            .nav-btn { font-size: 0.9rem; padding: 0.8rem 0.5rem; }
+            .nav-btn span { display: none; }
+            .nav-btn i { font-size: 1.35rem; }
+            .nav-bar { padding: 0 0.4rem; }
+            .form-label, .flood-form-label { font-size: 0.91rem; }
+            .modern-select, .flood-modern-select { font-size: 0.98rem; padding: 0.5rem 0.8rem;}
+            .search-btn { padding: 0.5rem 1.1rem; font-size: 1rem; margin-left: 0.5rem;}
+            .search-form { gap: 0.6rem; }
+            .flood-section { margin-top: 1.2rem; }
+            .flood-form-group { margin: 0 1rem 1rem 1rem; }
+            .flood-divider { margin: 1rem 1rem 0.5rem 1rem; }
+        }
+        </style>
+
+        <title>PROJECT TOMAS</title>
+    </head>
+    <body>
+        <div id="main-wrapper">
+            <div id="left-pane">
+                <div class="sidebar-header">
+                    <span>Database</span>
+                </div>
+                <nav class="nav-bar">
+                    <button class="nav-btn" id="household-btn" title="Household">
+                        <i class="fas fa-home"></i>
+                        <span>Household</span>
+                    </button>
+                    <button class="nav-btn" title="ACVs">
+                        <i class="fas fa-industry"></i>
+                        <span>ACVs</span>
+                    </button>
+                    <button class="nav-btn" title="Equipment">
+                        <i class="fas fa-tools"></i>
+                        <span>Equipment</span>
+                    </button>
+                    <button class="nav-btn" id="roads-btn" title="Roads &amp; Bridges">
+                        <i class="fas fa-road"></i>
+                        <span>Roads &amp; Bridges</span>
+                    </button>
+                    <button class="nav-btn" title="Evac Center">
+                        <i class="fas fa-hospital"></i>
+                        <span>Evac Center</span>
+                    </button>
+                    <button class="nav-btn" title="Buildings">
+                        <i class="fas fa-building"></i>
+                        <span>Buildings</span>
+                    </button>
+                    <button class="nav-btn" title="Schools">
+                        <i class="fas fa-school"></i>
+                        <span>Schools</span>
+                    </button>
+                </nav>
+                <!-- Flood Extent Dropdown Section Styled like Database Header -->
+                <div class="flood-section">
+                    <div class="sidebar-header flood-header">
+                        <span>Flood Extent</span>
+                    </div>
+                    <div class="flood-form-group">
+                        <label class="flood-form-label" for="floodExtentDropdown">Flood Extent</label>
+                        <select id="floodExtentDropdown" class="flood-modern-select">
+                            <option value="">Select Flood Extent</option>
+                            <option value="24">24 meters</option>
+                            <option value="25">25 meters</option>
+                            <option value="26">26 meters</option>
+                            <option value="27">27 meters</option>
+                            <option value="28">28 meters</option>
+                            <option value="29">29 meters</option>
+                            <option value="30">30 meters</option>
+                        </select>
+                    </div>
+                    <hr class="flood-divider" />
+                </div>
             </div>
-            <div class="dropdown">
-                <select id="municipalityDropdown" aria-label="Select Municipality">
-                    <option value="">Municipality</option>
-                    <option value="municipality1">Municipality 1</option>
-                    <option value="municipality2">Municipality 2</option>
-                    <option value="municipality3">Municipality 3</option>
-                </select>
+            <!-- Top Bar -->
+            <div id="top-pane">
+                <form class="search-form" autocomplete="off">
+                    <div class="form-group">
+                        <label class="form-label" for="province-select">Province</label>
+                        <select id="province-select" class="modern-select">
+                            <option value="">Select Province</option>
+                            <!-- Dynamic options -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="municipality-select">Municipality</label>
+                        <select id="municipality-select" class="modern-select">
+                            <option value="">Select Municipality</option>                            
+                            <!-- Dynamic options -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="barangay-select">Barangay</label>
+                        <select id="barangay-select" class="modern-select">
+                            <option value="">Select Barangay</option>
+                            <!-- Dynamic options -->
+                        </select>
+                    </div>
+                    <button type="button" class="search-btn">Search</button>
+                </form>
             </div>
-            <div class="dropdown">
-                <select id="barangayDropdown" aria-label="Select Barangay">
-                    <option value="">Barangays</option>
-                    <option value="barangay1">Barangay 1</option>
-                    <option value="barangay2">Barangay 2</option>
-                    <option value="barangay3">Barangay 3</option>
-                </select>
+
+            <!-- Modern Table Container for Household Data (initially hidden) -->
+            <div id="household-data-table-container">
+                <button id="close-household-table-btn" title="Close Table">&times;</button>
+                <table class="modern-table" id="household-data-table">
+                    <thead>
+                        <tr>
+                            <th>Given Name</th>
+                           <th>Middle Name</th>
+                            <th>Last Name</th>
+                            <th>Household Size</th>
+                            <th>Age</th>
+                            <th>Sex</th>
+                            <th>Occupation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="empty-message" colspan="6">No household selected.</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <div class="header-search">
-                <input type="text" id="navbarSearchInput" placeholder="Search..." aria-label="Search">
-                <button id="navbarSearchBtn" aria-label="Search">
-                    <i class="fas fa-search"></i>
-                </button>
+
+            <div id="map-container">
+                <div id="map">
+                    <div id="popup" class="ol-popup">
+                        <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+                        <div id="popup-content"></div>
+                    </div>
+                </div>
             </div>
         </div>
-    </header>
-    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Open navigation">&#9776;</button>
-    <div class="main-container">
-        <nav class="sidebar" id="sidebarNav" aria-label="Main navigation">
-            <div class="sidebar-header">Menu</div>
-            <div class="nav-section">
-                <div class="nav-buttons">
-                    <button type="button">Households</button>
-                    <button type="button">Rescuers</button>
-                    <button type="button">ACDVs</button>
-                    <button type="button">Equipments</button>
-                    <button type="button">Roads and Bridges</button>
-                    <button type="button">Evax Center</button>
-                    <button type="button">Hospitals</button>
-                    <button type="button">Buildings</button>
-                    <button type="button">Schools</button>
-                </div>
-                <hr class="divider">
-                <div class="nav-buttons">
-                    <button type="button">Visualization</button>
-                    <button type="button">Materlist</button>
-                    <button type="button">Statistics</button>
-                    <button type="button">Entry Form</button>
-                    <button type="button">Import/export</button>
-                    <button type="button">Acounts</button>
-                </div>
-            </div>
-        </nav>
-        <div id="map">
-            <!-- Household Table Container (hidden by default, shown only when a polygon is selected) -->
-            <div id="householdTableContainer" class="household-table-container" style="display:none;">
-                <div class="household-table-title">Household Information</div>
-                <div class="household-table-scroll" id="householdTableScroll">
-                    <table class="household-table" id="householdTable">
-                        <thead>
-                            <tr>
-                                <th>Family-ID</th>
-                                <!-- <th>Individual-ID</th> removed -->
-                                <th>First Name</th>
-                                <th>Middle Name</th>
-                                <th>Last Name</th>
-                                <th>Age</th>
-                                <th>Sex</th>
-                                <th>Occupation</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Data rows will be injected here -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <!-- Instruction message for multi-selection -->
-            <div class="map-instruction-message" id="mapInstructionMsg">
-                <i class="fas fa-info-circle" aria-hidden="true"></i>
-                <span>
-                    <strong>How to select multiple polygons:</strong>
-                    <ul>
-                        <li><b>Click</b> on a polygon to select it. The household data for all selected polygons will be shown below.</li>
-                        <li><b>Click again</b> on a selected polygon to deselect it.</li>
-                        <li>You can select or deselect as many polygons as you want, one at a time, by clicking on them.</li>
-                        <li>To <b>clear all selections</b>, click anywhere on the map background (not on a polygon).</li>
-                        <li><b>Tip:</b> The cursor will change to a pointer when you hover over a selectable polygon.</li>
-                        <li><b>Long-press and drag</b> on the map to draw a box and select all polygons inside the box.</li>
-                    </ul>
-                </span>
-            </div>
-        </div>
-    </div>
-    <script>
-    // Navbar search toggle (now always visible, just triggers search)
-    const searchBtn = document.getElementById('navbarSearchBtn');
-    const searchInput = document.getElementById('navbarSearchInput');
-    searchBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        if (searchInput.value.trim() !== "") {
-            // Implement search logic here
-            alert('Searching for: ' + searchInput.value);
-        } else {
-            searchInput.focus();
-        }
-    });
-    searchInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && searchInput.value.trim() !== "") {
-            alert('Searching for: ' + searchInput.value);
-        }
-    });
 
-    // Sidebar toggle for mobile
-    const sidebar = document.getElementById('sidebarNav');
-    const toggleBtn = document.getElementById('sidebarToggle');
-    function closeSidebarOnClickOutside(e) {
-        if (window.innerWidth > 900) return;
-        if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
-            sidebar.classList.remove('open');
-        }
-    }
-    toggleBtn.addEventListener('click', function() {
-        sidebar.classList.toggle('open');
-    });
-    // Close sidebar when clicking outside (mobile)
-    document.addEventListener('click', closeSidebarOnClickOutside);
-    // Optional: close sidebar on nav button click (mobile)
-    sidebar.querySelectorAll('button').forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (window.innerWidth <= 900) sidebar.classList.remove('open');
-        });
-    });
+        <script src="resources/qgis2web_expressions.js"></script>
+        <script src="./resources/functions.js"></script>
+        <script src="./resources/ol.js"></script>
+        <script src="./resources/ol-layerswitcher.js"></script>
+        <script src="resources/photon-geocoder-autocomplete.min.js"></script>
+        <script src="layers/Barangay_1.js"></script>
+        <script src="layers/Municipality_2.js"></script>
+        <script src="layers/Province_3.js"></script>
+        <script src="layers/Households_11.js"></script>
+        <script src="layers/Roads_12.js"></script>
+        <script src="styles/Barangay_1_style.js"></script>
+        <script src="styles/Municipality_2_style.js"></script>
+        <script src="styles/Province_3_style.js"></script>
+        <script src="styles/Households_11_style.js"></script>
+        <script src="styles/Roads_12_style.js"></script>
+        <script src="./layers/layers.js" type="text/javascript"></script> 
+        <script src="./resources/Autolinker.min.js"></script>
+        <script src="./resources/qgis2web.js"></script>
+        <script>
+        // Wait for Province_3 features to load before attempting to access them.
+        // The variable 'json_Province_3_0' is defined in Province_3.js and holds the GeoJSON FeatureCollection.
 
-    // --- Household Table Logic ---
-    // Assumes Households_10.js is loaded and provides a GeoJSON object named 'json_Households_10'
-    // and that the OpenLayers map is initialized as 'map' and the layer as 'lyr_Households_10_3' (default qgis2web naming)
-    // If your layer variable is named differently, adjust accordingly.
+        // --- Hide Household and Roads polygons unless button is clicked ---.
 
-    // Helper: get the OpenLayers map and Households layer
-    function getMapAndHouseholdsLayer() {
-        let map = window.map;
-        let householdsLayer = null;
-        if (window.lyr_Households_10_3) {
-            householdsLayer = window.lyr_Households_10_3;
-        } else if (window.lyr_Households_10) {
-            householdsLayer = window.lyr_Households_10;
-        } else if (window.layersList) {
-            for (let lyr of window.layersList) {
-                if (lyr && lyr.get('title') && lyr.get('title').toLowerCase().includes('household')) {
-                    householdsLayer = lyr;
-                    break;
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // ========== Province Select Population ================
+            function populateProvinceSelect() {
+                // Try to access the variable from Province_3.js
+                if (typeof json_Province_3_0 === "undefined" || !json_Province_3_0.features) {
+                    setTimeout(populateProvinceSelect, 100);
+                    return;
                 }
-            }
-        }
-        return { map, householdsLayer };
-    }
-
-    // Helper: extract household data from feature properties
-    function extractHouseholdMembers(properties) {
-        if (Array.isArray(properties.members)) {
-            return properties.members;
-        }
-        const member = {};
-        member['Family-ID'] = properties['FAMILY-ID'] || properties['FamilyID'] || properties['family_id'] || properties['familyid'] || '';
-        // member['Individual-ID'] = properties['INDIVIDUAL-ID'] || properties['IndividualID'] || properties['individual_id'] || properties['individualid'] || '';
-        member['First Name'] = properties['GIVEN NAME'] || properties['FirstName'] || properties['first_name'] || properties['firstname'] || '';
-        member['Middle Name'] = properties['MIDDLE NAME'] || properties['MiddleName'] || properties['middle_name'] || properties['middlename'] || '';
-        member['Last Name'] = properties['LAST NAME'] || properties['LastName'] || properties['last_name'] || properties['lastname'] || '';
-        member['Age'] = properties['AGE'] || properties['age'] || '';
-        member['Sex'] = properties['SEX'] || properties['sex'] || '';
-        member['Occupation'] = properties['OCCUPATION'] || properties['occupation'] || '';
-        if (Object.values(member).some(v => v !== '')) {
-            return [member];
-        }
-        return [];
-    }
-
-    // Render the household table (no Individual-ID column)
-    function renderHouseholdTable(members) {
-        const container = document.getElementById('householdTableContainer');
-        const tbody = document.getElementById('householdTable').querySelector('tbody');
-        const scrollDiv = document.getElementById('householdTableScroll');
-        tbody.innerHTML = '';
-        if (!members || members.length === 0) {
-            const tr = document.createElement('tr');
-            const td = document.createElement('td');
-            td.colSpan = 7;
-            td.style.textAlign = 'center';
-            td.textContent = 'No household data found.';
-            tr.appendChild(td);
-            tbody.appendChild(tr);
-            scrollDiv.style.maxHeight = '';
-            scrollDiv.style.overflowY = '';
-        } else {
-            // Only show first 10, add scroll if more
-            let showMembers = members;
-            if (members.length > 10) {
-                showMembers = members.slice(0, 10);
-                scrollDiv.style.maxHeight = '420px';
-                scrollDiv.style.overflowY = 'auto';
-            } else {
-                scrollDiv.style.maxHeight = '';
-                scrollDiv.style.overflowY = '';
-            }
-            for (const member of showMembers) {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${member['Family-ID'] ?? ''}</td>
-                    <td>${member['First Name'] ?? ''}</td>
-                    <td>${member['Middle Name'] ?? ''}</td>
-                    <td>${member['Last Name'] ?? ''}</td>
-                    <td>${member['Age'] ?? ''}</td>
-                    <td>${member['Sex'] ?? ''}</td>
-                    <td>${member['Occupation'] ?? ''}</td>
-                `;
-                tbody.appendChild(tr);
-            }
-            // If more than 10, add a note row at the bottom
-            if (members.length > 10) {
-                const tr = document.createElement('tr');
-                const td = document.createElement('td');
-                td.colSpan = 7;
-                td.style.textAlign = 'center';
-                td.style.background = '#f9fafb';
-                td.innerHTML = `Showing first 10 of ${members.length} records. Scroll to see more.`;
-                tr.appendChild(td);
-                tbody.appendChild(tr);
-            }
-        }
-        container.classList.add('active');
-        container.style.display = 'block';
-    }
-
-    // Hide the household table
-    function hideHouseholdTable() {
-        const container = document.getElementById('householdTableContainer');
-        container.classList.remove('active');
-        container.style.display = 'none';
-        // Optionally clear table rows
-        const tbody = document.getElementById('householdTable').querySelector('tbody');
-        if (tbody) tbody.innerHTML = '';
-        // Reset scroll
-        const scrollDiv = document.getElementById('householdTableScroll');
-        if (scrollDiv) {
-            scrollDiv.style.maxHeight = '';
-            scrollDiv.style.overflowY = '';
-        }
-    }
-
-    // --- Polygon selection logic ---
-    // Show table when one or more polygons are selected, and allow multiple selection
-    function setupPolygonSelection() {
-        const { map, householdsLayer } = getMapAndHouseholdsLayer();
-        if (!map || !householdsLayer) {
-            setTimeout(setupPolygonSelection, 500);
-            return;
-        }
-
-        // Add select interaction if not already present
-        let selectInteraction = null;
-        if (window.householdSelectInteraction) {
-            selectInteraction = window.householdSelectInteraction;
-        } else if (typeof ol !== "undefined" && ol.interaction && ol.interaction.Select) {
-            selectInteraction = new ol.interaction.Select({
-                layers: [householdsLayer],
-                style: null, // Use default or custom style if needed
-                multi: true, // Enable multiple selection
-                // By default, ctrl/cmd+click for multi, but we will allow always multi below
-            });
-            map.addInteraction(selectInteraction);
-            window.householdSelectInteraction = selectInteraction;
-        }
-
-        // Hide table initially
-        hideHouseholdTable();
-
-        // Listen for selection changes
-        if (selectInteraction) {
-            selectInteraction.on('select', function(e) {
-                const selected = selectInteraction.getFeatures().getArray();
-                if (selected && selected.length > 0) {
-                    // Collect all members from all selected features
-                    let allMembers = [];
-                    for (let feat of selected) {
-                        let props = typeof feat.get === "function" ? feat.getProperties() : feat.properties || {};
-                        if (props.geometry) delete props.geometry;
-                        let members = extractHouseholdMembers(props);
-                        if (members.length === 0 && Array.isArray(props.household_members)) {
-                            members = props.household_members;
+                var features = json_Province_3_0.features;
+                var provinceNames = [];
+                features.forEach(function (feature) {
+                    if (feature.properties && feature.properties.NAME_1) {
+                        var provinceName = feature.properties.NAME_1.trim();
+                        if (provinceNames.indexOf(provinceName) === -1 && provinceName.length > 0) {
+                            provinceNames.push(provinceName);
                         }
-                        // If members is an array of arrays, flatten
-                        if (Array.isArray(members[0])) {
-                            members = members.flat();
-                        }
-                        allMembers = allMembers.concat(members);
-                    }
-                    renderHouseholdTable(allMembers);
-                } else {
-                    hideHouseholdTable();
-                }
-            });
-
-            // Make selection always multi (no need for ctrl/cmd)
-            // This is a workaround for OpenLayers default behavior
-            // We will handle click events to toggle selection
-            const selectFeatures = selectInteraction.getFeatures();
-            map.on('singleclick', function(evt) {
-                let featureFound = false;
-                map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
-                    if (layer === householdsLayer) {
-                        featureFound = true;
-                        if (selectFeatures.getArray().indexOf(feature) === -1) {
-                            selectFeatures.push(feature);
-                        } else {
-                            selectFeatures.remove(feature);
-                        }
-                        // Prevent default OL select from toggling all
-                        return true;
                     }
                 });
-                // If click not on a polygon, clear selection
-                if (!featureFound) {
-                    selectFeatures.clear();
+                provinceNames.sort();
+                var provinceSelect = document.getElementById('province-select');
+                if (!provinceSelect) return;
+                while (provinceSelect.options.length > 1) {
+                    provinceSelect.remove(1);
                 }
-            });
-        }
+                provinceNames.forEach(function (name) {
+                    var option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    provinceSelect.appendChild(option);
+                });
+            }
+            populateProvinceSelect();
 
-        // --- Change cursor to hand when hovering over a polygon ---
-        map.on('pointermove', function(evt) {
-            if (evt.dragging) return;
-            let hit = false;
-            map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
-                if (layer === householdsLayer) {
-                    hit = true;
-                    return true;
+            // ========== Household Polygon Visibility Control ============
+
+            function setHouseholdInitialVisibility() {
+                var householdLayer = null;
+                if (typeof lyr_Households_11 !== "undefined") {
+                    householdLayer = lyr_Households_11;
+                } else if (typeof window !== "undefined") {
+                    for (let k in window) {
+                        if (
+                            window.hasOwnProperty(k)
+                            && typeof window[k] === 'object'
+                            && window[k] !== null
+                            && window[k].hasOwnProperty("setVisible")
+                            && k.toLowerCase().indexOf("household") !== -1
+                        ) {
+                            householdLayer = window[k];
+                            break;
+                        }
+                    }
                 }
-            });
-            map.getTargetElement().style.cursor = hit ? 'pointer' : '';
-        });
 
-        // --- Box selection logic (long-press and drag) ---
-        // This is a custom implementation for long-press (400ms) and drag to select polygons in a box
-        let boxSelect = {
-            isLongPress: false,
-            isDragging: false,
-            startPixel: null,
-            endPixel: null,
-            timer: null,
-            boxDiv: null
-        };
+                if (!householdLayer) {
+                    setTimeout(setHouseholdInitialVisibility, 150);
+                    return;
+                }
 
-        const mapTarget = map.getTargetElement();
+                if (typeof householdLayer.setVisible === "function") {
+                    householdLayer.setVisible(false);
+                }
 
-        function getRelativeMousePos(e) {
-            // e is a MouseEvent
-            const rect = mapTarget.getBoundingClientRect();
-            return {
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top
-            };
-        }
-
-        function createBoxDiv() {
-            let div = document.createElement('div');
-            div.className = 'ol-box-select-rectangle';
-            div.style.display = 'none';
-            mapTarget.appendChild(div);
-            return div;
-        }
-
-        function showBoxDiv(start, end) {
-            if (!boxSelect.boxDiv) boxSelect.boxDiv = createBoxDiv();
-            const x1 = Math.min(start.x, end.x);
-            const y1 = Math.min(start.y, end.y);
-            const x2 = Math.max(start.x, end.x);
-            const y2 = Math.max(start.y, end.y);
-            boxSelect.boxDiv.style.left = x1 + 'px';
-            boxSelect.boxDiv.style.top = y1 + 'px';
-            boxSelect.boxDiv.style.width = (x2 - x1) + 'px';
-            boxSelect.boxDiv.style.height = (y2 - y1) + 'px';
-            boxSelect.boxDiv.style.display = 'block';
-        }
-
-        function hideBoxDiv() {
-            if (boxSelect.boxDiv) {
-                boxSelect.boxDiv.style.display = 'none';
-            }
-        }
-
-        function clearBoxSelectState() {
-            boxSelect.isLongPress = false;
-            boxSelect.isDragging = false;
-            boxSelect.startPixel = null;
-            boxSelect.endPixel = null;
-            if (boxSelect.timer) {
-                clearTimeout(boxSelect.timer);
-                boxSelect.timer = null;
-            }
-            hideBoxDiv();
-        }
-
-        // Mouse event handlers for box selection
-        mapTarget.addEventListener('mousedown', function(e) {
-            if (e.button !== 0) return; // Only left mouse button
-            // Prevent interfering with map controls
-            if (e.target.closest('.ol-control')) return;
-            boxSelect.startPixel = getRelativeMousePos(e);
-            boxSelect.isLongPress = false;
-            boxSelect.isDragging = false;
-            boxSelect.timer = setTimeout(function() {
-                boxSelect.isLongPress = true;
-                boxSelect.isDragging = true;
-                boxSelect.endPixel = boxSelect.startPixel;
-                showBoxDiv(boxSelect.startPixel, boxSelect.endPixel);
-            }, 400); // 400ms for long-press
-        });
-
-        mapTarget.addEventListener('mousemove', function(e) {
-            if (boxSelect.isDragging && boxSelect.isLongPress) {
-                boxSelect.endPixel = getRelativeMousePos(e);
-                showBoxDiv(boxSelect.startPixel, boxSelect.endPixel);
-            }
-        });
-
-        mapTarget.addEventListener('mouseup', function(e) {
-            if (boxSelect.timer) {
-                clearTimeout(boxSelect.timer);
-                boxSelect.timer = null;
-            }
-            if (boxSelect.isDragging && boxSelect.isLongPress) {
-                boxSelect.endPixel = getRelativeMousePos(e);
-                hideBoxDiv();
-                // Perform box selection
-                const pixel1 = [boxSelect.startPixel.x, boxSelect.startPixel.y];
-                const pixel2 = [boxSelect.endPixel.x, boxSelect.endPixel.y];
-                const minX = Math.min(pixel1[0], pixel2[0]);
-                const minY = Math.min(pixel1[1], pixel2[1]);
-                const maxX = Math.max(pixel1[0], pixel2[0]);
-                const maxY = Math.max(pixel1[1], pixel2[1]);
-                // Get extent in map coordinates
-                const coord1 = map.getCoordinateFromPixel([minX, minY]);
-                const coord2 = map.getCoordinateFromPixel([maxX, maxY]);
-                const extent = [
-                    Math.min(coord1[0], coord2[0]),
-                    Math.min(coord1[1], coord2[1]),
-                    Math.max(coord1[0], coord2[0]),
-                    Math.max(coord1[1], coord2[1])
-                ];
-                // Select all polygons in the box
-                const featuresInBox = [];
-                householdsLayer.getSource().forEachFeature(function(feature) {
-                    if (feature.getGeometry().intersectsExtent(extent)) {
-                        featuresInBox.push(feature);
-                    }
-                });
-                // Add to selection (union with current selection)
-                const selectFeatures = selectInteraction.getFeatures();
-                // Remove duplicates
-                featuresInBox.forEach(f => {
-                    if (selectFeatures.getArray().indexOf(f) === -1) {
-                        selectFeatures.push(f);
-                    }
-                });
-                // Show table for all selected
-                if (selectFeatures.getLength() > 0) {
-                    let allMembers = [];
-                    selectFeatures.forEach(function(feat) {
-                        let props = typeof feat.get === "function" ? feat.getProperties() : feat.properties || {};
-                        if (props.geometry) delete props.geometry;
-                        let members = extractHouseholdMembers(props);
-                        if (members.length === 0 && Array.isArray(props.household_members)) {
-                            members = props.household_members;
-                        }
-                        if (Array.isArray(members[0])) {
-                            members = members.flat();
-                        }
-                        allMembers = allMembers.concat(members);
+                var householdBtn = document.getElementById('household-btn');
+                if (!householdBtn) return;
+                householdBtn.addEventListener('click', function() {
+                    var isActive = this.classList.contains('active');
+                    document.querySelectorAll('.nav-btn').forEach(function(btn){
+                        btn.classList.remove('active');
                     });
-                    renderHouseholdTable(allMembers);
+                    if (!isActive) {
+                        this.classList.add('active');
+                        householdLayer.setVisible(true);
+                    } else {
+                        householdLayer.setVisible(false);
+                    }
+                });
+            }
+
+            setHouseholdInitialVisibility();
+
+            // ========== Roads Layer Visibility Control ===========
+
+            function setRoadsInitialVisibility() {
+                var roadsLayer = null;
+                if (typeof lyr_Roads_12 !== "undefined") {
+                    roadsLayer = lyr_Roads_12;
+                } else if (typeof window !== "undefined") {
+                    for (let k in window) {
+                        if (
+                            window.hasOwnProperty(k)
+                            && typeof window[k] === 'object'
+                            && window[k] !== null
+                            && window[k].hasOwnProperty("setVisible")
+                            && k.toLowerCase().indexOf("road") !== -1
+                        ) {
+                            roadsLayer = window[k];
+                            break;
+                        }
+                    }
+                }
+
+                if (!roadsLayer) {
+                    setTimeout(setRoadsInitialVisibility, 150);
+                    return;
+                }
+
+                if (typeof roadsLayer.setVisible === "function") {
+                    roadsLayer.setVisible(false);
+                }
+
+                var roadsBtn = document.getElementById('roads-btn');
+                if (!roadsBtn) return;
+                roadsBtn.addEventListener('click', function() {
+                    var isActive = this.classList.contains('active');
+                    document.querySelectorAll('.nav-btn').forEach(function(btn){
+                        btn.classList.remove('active');
+                    });
+                    if (!isActive) {
+                        this.classList.add('active');
+                        roadsLayer.setVisible(true);
+                    } else {
+                        roadsLayer.setVisible(false);
+                    }
+                });
+            }
+
+            setRoadsInitialVisibility();
+
+            // ========== Flood Extent 24 meters (24_10.png) raster visibility ===========
+
+            function findFloodExtent24Layer() {
+                for (var key in window) {
+                    if (
+                        window.hasOwnProperty(key) &&
+                        window[key] &&
+                        typeof window[key] === "object" &&
+                        window[key].hasOwnProperty("setVisible") &&
+                        (
+                            (window[key].getSource && window[key].getSource() && window[key].getSource().getUrl && typeof window[key].getSource().getUrl === "function" &&
+                            (window[key].getSource().getUrl()+"").indexOf("24_10.png") !== -1) ||
+                            (key.indexOf("24_10") !== -1)
+                        )
+                    ) {
+                        return window[key];
+                    }
+                }
+                return null;
+            }
+
+            function setFloodExtent24InitialVisibility() {
+                var layer = findFloodExtent24Layer();
+                if (!layer) {
+                    setTimeout(setFloodExtent24InitialVisibility, 150);
+                    return;
+                }
+                layer.setVisible(false);
+                var dropdown = document.getElementById('flood-extent-select');
+                if (!dropdown) return;
+                dropdown.addEventListener('change', function(){
+                    if(this.value === "24") {
+                        layer.setVisible(true);
+                    } else {
+                        layer.setVisible(false);
+                    }
+                });
+            }
+            setFloodExtent24InitialVisibility();
+
+            // =========================
+            // ========== NEW: HOUSEHOLD POLYGON DATA TABLE ================
+            // =========================
+
+            // Utility: get OpenLayers map object (qgis2web puts it on 'map')
+            function getMainMap() {
+                if (typeof map !== "undefined") return map;
+                if (typeof window !== "undefined" && window.map) return window.map;
+                return null;
+            }
+
+            // Fields to display in the table:
+            // Last name, Middle Name, household size, age, sex, Occupation.
+            // Try typical spellings for field names from Household properties (adapt as needed)
+            const householdTableFields = [
+                { label: "Given Name",      field: ["GIVEN NAME", "LNAME", "lname", "last_name", "Last_Name", "lastName"] },
+                { label: "Middle Name",    field: ["MIDDLE NAME", "MNAME", "mname", "middle_name", "Middle_Name", "middleName"] },
+                { label: "Last Name",      field: ["LAST NAME", "LNAME", "lname", "last_name", "Last_Name", "lastName"] },
+                { label: "Household Size", field: ["NUMBER OF OCCUPANTS", "SIZE", "household_size", "Household_Size", "HouseholdSize"] },
+                { label: "Age",            field: ["AGE", "age"] },
+                { label: "Sex",            field: ["SEX", "sex", "Sex"] },
+                { label: "Occupation",     field: ["OCCUPATION", "occupation", "Occupation"] }
+            ];
+
+            // Handles multiple household member records (if properties includes arrays), but if not, just outputs a single row.
+            function buildHouseholdTableRows(properties) {
+                if (!properties) return `<tr><td class="empty-message" colspan="6">No household data found.</td></tr>`;
+                // Check if any property is array: if so, per-member rows, else single-row household
+                let maxLen = 1;
+                const values = householdTableFields.map(f => {
+                    let v = undefined;
+                    for (let fname of f.field) if (v === undefined && properties.hasOwnProperty(fname)) v = properties[fname];
+                    return v;
+                });
+                // If any value is array, get max array length for member records
+                values.forEach(v => {
+                    if (Array.isArray(v) && v.length > maxLen) maxLen = v.length;
+                });
+
+                let rows = "";
+                for (let i = 0; i < maxLen; ++i) {
+                    rows += "<tr>";
+                    for (let j = 0; j < householdTableFields.length; ++j) {
+                        const v = values[j];
+                        let display;
+                        if (Array.isArray(v)) {
+                            display = (v[i] !== undefined && v[i] !== null) ? v[i] : "";
+                        } else {
+                            display = (i === 0 && v !== undefined && v !== null) ? v : "";
+                        }
+                        rows += `<td>${display !== undefined ? display : ""}</td>`;
+                    }
+                    rows += "</tr>";
+                }
+
+                // If all values are empty (all first row values are undefined/empty), return a 'no data' row.
+                if (/^<tr>(<td>(|undefined|null)<\/td>)+<\/tr>$/.test(rows)) {
+                    return `<tr><td class="empty-message" colspan="6">No household data found.</td></tr>`;
+                }
+                return rows;
+            }
+
+            // Show the data table with given properties (or hide if null)
+            function showHouseholdDataTable(properties) {
+                var container = document.getElementById("household-data-table-container");
+                var tbody = document.getElementById("household-data-table").getElementsByTagName("tbody")[0];
+                if (properties) {
+                    tbody.innerHTML = buildHouseholdTableRows(properties);
+                    container.style.display = "block";
                 } else {
-                    hideHouseholdTable();
+                    // No selection: message shown, hide
+                    tbody.innerHTML = `<tr><td class="empty-message" colspan="6">No household selected.</td></tr>`;
+                    container.style.display = "none";
                 }
             }
-            clearBoxSelectState();
-        });
+            // Close button event
+            document.getElementById("close-household-table-btn").addEventListener("click", function() {
+                showHouseholdDataTable(null);
+            });
 
-        // If mouse leaves the map while dragging, cancel box selection
-        mapTarget.addEventListener('mouseleave', function(e) {
-            clearBoxSelectState();
-        });
+            // ========== MAIN: Listen for household polygon selection ===========
+            // - show table on select
+            // - if map click, check if on a household, else hide table
 
-        // Prevent map drag-pan while box selecting
-        map.on('pointerdrag', function(evt) {
-            if (boxSelect.isDragging && boxSelect.isLongPress) {
-                evt.preventDefault();
+            function setupHouseholdFeatureSelection() {
+                const mapObj = getMainMap();
+                if (!mapObj) {
+                    setTimeout(setupHouseholdFeatureSelection, 150);
+                    return;
+                }
+                let householdLayer = (typeof lyr_Households_11 !== "undefined") ? lyr_Households_11 : null;
+                if (!householdLayer && typeof window !== "undefined") {
+                    for (let k in window) {
+                        if (
+                            window.hasOwnProperty(k)
+                            && typeof window[k] === 'object'
+                            && window[k] !== null
+                            && window[k].hasOwnProperty("getSource")
+                            && k.toLowerCase().indexOf("household") !== -1
+                        ) {
+                            householdLayer = window[k];
+                            break;
+                        }
+                    }
+                }
+                if (!householdLayer || typeof householdLayer.getSource !== "function") {
+                    setTimeout(setupHouseholdFeatureSelection, 150);
+                    return;
+                }
+
+                // OpenLayers vector layer
+                // When household polygons are visible, click enables attribute table
+                mapObj.on('singleclick', function(evt) {
+                    // Disable default popup for household polygons.
+                    let featureFound = null;
+                    let isHouseholdFeature = false;
+
+                    // Only active & visible if household layer is visible
+                    if (!householdLayer.getVisible()) {
+                        showHouseholdDataTable(null);
+                        return;
+                    }
+                    // Get features at click location
+                    mapObj.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
+                        if (layer === householdLayer) {
+                            featureFound = feature;
+                            isHouseholdFeature = true;
+                            return true;
+                        }
+                    });
+
+                    if (isHouseholdFeature) {
+                        // Suppress popup for household polygons
+                        // Remove popup if open
+                        var popupContainer = document.getElementById('popup');
+                        if (popupContainer) popupContainer.style.display = 'none';
+
+                        if (featureFound) {
+                            showHouseholdDataTable(featureFound.getProperties());
+                        } else {
+                            showHouseholdDataTable(null);
+                        }
+                        // Prevent popup show from other handlers (if any)
+                        evt.preventDefault && evt.preventDefault();
+                        evt.stopPropagation && evt.stopPropagation();
+                        return false;
+                    }
+                    // For non-household features, do not touch popup behavior here.
+
+                });
+
+                // Hide the table if any click outside household polygons (or on map when not visible)
+                mapObj.getTargetElement().addEventListener('click', function(e){
+                    // This is handled in 'singleclick' above! No need to double process.
+                });
+
+                // Also hide the table if layer is turned off
+                if (typeof householdLayer.on === "function") {
+                    householdLayer.on('change:visible', function(evt){
+                        if (!householdLayer.getVisible()) showHouseholdDataTable(null);
+                    });
+                }
             }
+            setupHouseholdFeatureSelection();
+
         });
-    }
-
-    // Wait for map and layer to be ready, then setup polygon selection
-    window.addEventListener('load', function() {
-        setupPolygonSelection();
-
-        // Hide the instruction message after 10 seconds
-        setTimeout(function() {
-            var msg = document.getElementById('mapInstructionMsg');
-            if (msg) {
-                msg.classList.add('hide');
-            }
-        }, 10000);
-    });
-
-    </script>
-    <script src="resources/qgis2web_expressions.js"></script>
-    <script src="./resources/functions.js"></script>
-    <script src="./resources/ol.js"></script>
-    <script src="resources/horsey.min.js"></script>
-    <script src="resources/ol-search-layer.js"></script>
-    <script src="./resources/ol-layerswitcher.js"></script>
-    <script src="resources/photon-geocoder-autocomplete.min.js"></script>
-    <script src="layers/MunicipalBoundary_8.js"></script><script src="layers/Roads_9.js"></script><script src="layers/Households_10.js"></script>
-    <script src="styles/MunicipalBoundary_8_style.js"></script><script src="styles/Roads_9_style.js"></script><script src="styles/Households_10_style.js"></script>
-    <script src="./layers/layers.js" type="text/javascript"></script> 
-    <script src="./resources/Autolinker.min.js"></script>
-    <script src="./resources/qgis2web.js"></script>
-</body>
+        </script>
+    </body>
 </html>
