@@ -165,6 +165,39 @@
             border-top: 2px solid #444;
             margin: 1.2rem 2rem 0.5rem 2rem;
         }
+        
+        /* Flood Legend Styles */
+        .flood-legend-section {
+            margin: 1.5rem 2rem 1rem 2rem;
+        }
+        .flood-legend {
+            background: #262a33;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            border: 1px solid #333;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.6rem;
+            padding: 0.3rem 0;
+        }
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+        .legend-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+        .legend-text {
+            color: #fafafa;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
 
         /* Top Pane Styles */
         #top-pane {
@@ -342,6 +375,11 @@
             .flood-section { margin-top: 1.2rem; }
             .flood-form-group { margin: 0 1rem 1rem 1rem; }
             .flood-divider { margin: 1rem 1rem 0.5rem 1rem; }
+            .flood-legend-section { margin: 1rem 1rem 0.8rem 1rem; }
+            .flood-legend { padding: 0.8rem; }
+            .legend-item { gap: 0.6rem; margin-bottom: 0.5rem; }
+            .legend-icon { width: 16px; height: 16px; }
+            .legend-text { font-size: 0.9rem; }
         }
         </style>
 
@@ -402,6 +440,33 @@
                         </select>
                     </div>
                     <hr class="flood-divider" />
+                    
+                    <!-- Flood Extent Legend -->
+                    <div class="flood-legend-section">
+                        <div class="flood-form-label">Flood Depth Legend</div>
+                        <div class="flood-legend">
+                            <div class="legend-item">
+                                <img src="styles/legend/24_10_0.png" alt="0.0010" class="legend-icon" />
+                                <span class="legend-text">0.0010m</span>
+                            </div>
+                            <div class="legend-item">
+                                <img src="styles/legend/24_10_1.png" alt="2.3258" class="legend-icon" />
+                                <span class="legend-text">2.3258m</span>
+                            </div>
+                            <div class="legend-item">
+                                <img src="styles/legend/24_10_2.png" alt="4.6505" class="legend-icon" />
+                                <span class="legend-text">4.6505m</span>
+                            </div>
+                            <div class="legend-item">
+                                <img src="styles/legend/24_10_3.png" alt="6.9753" class="legend-icon" />
+                                <span class="legend-text">6.9753m</span>
+                            </div>
+                            <div class="legend-item">
+                                <img src="styles/legend/24_10_4.png" alt="9.3000" class="legend-icon" />
+                                <span class="legend-text">9.3000m</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <!-- Top Bar -->
