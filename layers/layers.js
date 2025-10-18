@@ -237,8 +237,8 @@ lyr_Barangay_1.setVisible(true);
 lyr_Municipality_2.setVisible(false);
 lyr_Province_3.setVisible(true);
 // Set all flood extent layers initially invisible
-lyr_30_4.setVisible(false);
-lyr_29_5.setVisible(false);
+lyr_30_4.setVisible(true);
+lyr_29_5.setVisible(true);
 lyr_28_6.setVisible(false);
 lyr_27_7.setVisible(false);
 lyr_26_8.setVisible(false);

@@ -478,13 +478,12 @@ var layerSwitcher = new ol.control.LayerSwitcher({
 	collapseTipLabel: 'Close'
     });
 map.addControl(layerSwitcher);
-if (hasTouchScreen || isSmallScreen) {
-	document.addEventListener('DOMContentLoaded', function() {
-		setTimeout(function() {
-			layerSwitcher.hidePanel();
-		}, 500);
-	});	
-}
+// Always hide the layer panel but keep it active
+document.addEventListener('DOMContentLoaded', function() {
+	setTimeout(function() {
+		layerSwitcher.hidePanel();
+	}, 500);
+});
 
 
 
