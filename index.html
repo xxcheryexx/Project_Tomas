@@ -1139,7 +1139,7 @@
             font-size: 1.5rem;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4);
-            z-index: 999;
+            z-index: 2000;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
@@ -1679,7 +1679,7 @@
             border: 1px solid rgba(58, 63, 74, 0.8);
             border-radius: 16px;
             overflow: hidden;
-            z-index: 1200;
+            z-index: 2001;
             box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05) inset;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
         }
@@ -1755,6 +1755,11 @@
             background: rgba(58, 63, 74, 0.6);
             color: #fff;
             transform: scale(1.05);
+        }
+        
+        /* Hide settings button to protect API key */
+        #ai-chat-settings {
+            display: none !important;
         }
         
         .ai-chat-body {
@@ -1869,6 +1874,7 @@
             display: flex;
             gap: 10px;
             align-items: center;
+            pointer-events: auto !important;
         }
         
         .ai-chat-input-field {
@@ -1881,6 +1887,11 @@
             font-size: 14px;
             font-family: inherit;
             transition: all 0.2s ease;
+            pointer-events: auto !important;
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
         }
         
         .ai-chat-input-field::placeholder {
@@ -2416,10 +2427,6 @@
                         <button id="toggleInfographicsBtn" style="margin-top: 12px; padding: 0.5rem 0.8rem; border-radius: 8px; border: 1px solid #3a3f4a; background:#2a2f39; color:#fff; cursor:pointer; font-weight:600; width: 100%;">Impact Report</button>
                         <button type="button" id="minimumNeedsBtn" class="btn btn-secondary" 
                                 style="margin-top: 8px; padding: 0.5rem 0.8rem; border-radius: 8px; border: 1px solid #3a3f4a; background:#2a2f39; color:#fff; cursor:pointer; font-weight:600; width: 100%;">Minimum Needs</button>
-                        <button type="button" id="aiAssistantBtn" class="btn btn-secondary" 
-                                style="margin-top: 8px; padding: 0.5rem 0.8rem; border-radius: 8px; border: 1px solid #3a3f4a; background:#2a2f39; color:#fff; cursor:pointer; font-weight:600; width: 100%;">
-                            <i class="fas fa-robot" style="margin-right: 0.5rem;"></i>AI Assistant
-                        </button>
                     </div>
                             </div>
                             </div>
@@ -2734,7 +2741,7 @@
                             </div>
                             <div class="ai-chat-actions">
                                 <button id="ai-chat-docs" class="ai-chat-header-btn" title="Documentation">?</button>
-                                <button id="ai-chat-settings" class="ai-chat-header-btn" title="Settings">⚙</button>
+                                <button id="ai-chat-settings" class="ai-chat-header-btn" title="Settings" style="display: none;">⚙</button>
                                 <button id="ai-chat-close" class="ai-chat-header-btn" title="Close">×</button>
                             </div>
                         </div>
@@ -2769,7 +2776,7 @@
                                 </button>
                             </div>
                             <div class="ai-chat-input-wrapper">
-                                <input id="ai-chat-input" type="text" class="ai-chat-input-field" placeholder="Ask a question about the flood impact data..." />
+                                <input id="ai-chat-input" type="text" class="ai-chat-input-field" placeholder="Ask a question about the flood impact data..." autocomplete="off" />
                                 <button id="ai-chat-send" class="ai-chat-send-button" title="Send message">
                                     <i class="fas fa-paper-plane"></i>
                                 </button>
@@ -2801,12 +2808,19 @@
         <script src="layers/AnalysisSummaryat24meters_9.js"></script><script src="layers/AggregationSummaryat24meters_10.js"></script><script src="layers/HazardAggregationSummaryat24meters_11.js"></script><script src="layers/Numberofpeopleat24meters_12.js"></script><script src="layers/AnalysisSummaryat25meters_13.js"></script><script src="layers/AggregationSummaryat25meters_14.js"></script><script src="layers/HazardAggregationSummaryat25meters_15.js"></script><script src="layers/Numberofpeopleat25meters_16.js"></script><script src="layers/AnalysisSummaryat27meters_17.js"></script><script src="layers/AggregationSummaryat27meters_18.js"></script><script src="layers/HazardAggregationSummaryat27meters_19.js"></script><script src="layers/Numberofpeopleat26meters_20.js"></script><script src="layers/AnalysisSummaryat27meters_21.js"></script><script src="layers/AggregationSummaryatat27meters_22.js"></script><script src="layers/HazardAggregationSummaryat27meters_23.js"></script><script src="layers/Numberofpeopleat27meters_24.js"></script><script src="layers/AnalysisSummaryat28meters_25.js"></script><script src="layers/AggregationSummaryat28meters_26.js"></script><script src="layers/HazardAggregationSummaryat28meters_27.js"></script><script src="layers/Numberofpeopleat28meters_28.js"></script><script src="layers/AnalysisSummaryat29meters_29.js"></script><script src="layers/AggregationSummaryat29meters_30.js"></script><script src="layers/HazardAggregationSummaryat29meters_31.js"></script><script src="layers/Numberofpeopleat29meters_32.js"></script><script src="layers/AnalysisSummaryat30meters_33.js"></script><script src="layers/AggregationSummaryfor30meters_34.js"></script><script src="layers/HazardAggregationSummaryat30meters_35.js"></script><script src="layers/Numberofpeopleaffectedat30meters_36.js"></script><script src="layers/Schools_37.js"></script><script src="layers/Roads_38.js"></script><script src="layers/Region2_39.js"></script><script src="layers/DB_0.js"></script>        <script src="layers/StoTomasHouseholdsjoined_layer_1.js"></script>
         <!-- Aggregation Summary files for Impact Report charts -->
         <script src="layers/Agregation Summary/24MetersAgrigationsummary_1.js"></script>
+        <script src="layers/Agregation Summary/24MetersAnalysisSummary_0.js"></script>
         <script src="layers/Agregation Summary/25MetersAggregationSummary_3.js"></script>
+        <script src="layers/Agregation Summary/25MetersAnalysisSummary_2.js"></script>
         <script src="layers/Agregation Summary/26MetersAggregationSummary_5.js"></script>
+        <script src="layers/Agregation Summary/26MetersAnalysisSummary_4.js"></script>
         <script src="layers/Agregation Summary/27MetersAggregationSummary_7.js"></script>
+        <script src="layers/Agregation Summary/27MetersAnalysisSummary_6.js"></script>
         <script src="layers/Agregation Summary/28MetersAggregationSummary_9.js"></script>
+        <script src="layers/Agregation Summary/28MetersAnalysisSummary_8.js"></script>
         <script src="layers/Agregation Summary/29MetersAggregationSummary_11.js"></script>
+        <script src="layers/Agregation Summary/29MetersAnalysisSummary_10.js"></script>
         <script src="layers/Agregation Summary/30MetersAggregationSummary_13.js"></script>
+        <script src="layers/Agregation Summary/30MetersAnalysisSummary_12.js"></script>
         <!-- Households_1_style.js - Required for layers.js -->
         <script src="styles/Households_1_style.js"></script>
         <!-- People_0_style.js - DISABLED: Hidden but kept in code for future use -->
@@ -3656,12 +3670,6 @@
             // Charts panel is hidden when flood extent is selected
             hideChartsPanel();
             
-            // Generate AI insights when barangay selection changes
-            if (typeof generateAIInsights === 'function') {
-                setTimeout(function() {
-                    generateAIInsights();
-                }, 500);
-            }
         }
         
         /**
@@ -6816,12 +6824,6 @@
                     // Process aggregation data and update charts for the selected flood extent
                     setTimeout(function() {
                         processAggregationDataForFloodExtent(selectedValue);
-                        // Generate AI insights when flood extent is selected
-                        if (typeof generateAIInsights === 'function') {
-                            setTimeout(function() {
-                                generateAIInsights();
-                            }, 800);
-                        }
                     }, 300); // Small delay to ensure data is loaded
                     
                     if (selectedValue === '24') {
@@ -9355,7 +9357,8 @@
         
         /**
          * Gathers current app context for AI chat
-         * @returns {Object} Context object with current state
+         * Includes comprehensive data from all aggregation summaries, analysis summaries, DB_0, and household data
+         * @returns {Object} Context object with current state and all available data
          */
         function getChatContext() {
             try {
@@ -9365,6 +9368,9 @@
                     floodExtentMeter: null,
                     demographics: null,
                     minimumNeeds: null,
+                    allFloodExtents: {},
+                    db0Data: null,
+                    householdsData: null,
                     timestamp: new Date().toISOString()
                 };
                 
@@ -9375,7 +9381,7 @@
                     context.floodExtentMeter = parseInt(String(floodExtentDropdown.value).replace(/[^0-9]/g, ''), 10);
                 }
                 
-                // Get demographics data if available
+                // Get demographics data if available (filtered for current selection)
                 if (context.floodExtentMeter && context.selectedBarangays.length > 0) {
                     var aggregationData = getAggregationDataForMeter(context.floodExtentMeter);
                     if (aggregationData) {
@@ -9383,6 +9389,25 @@
                         context.minimumNeeds = filterAndAggregateMinimumNeeds(aggregationData, context.selectedBarangays);
                     }
                 }
+                
+                // Get all aggregation summary data for all flood extents (24-30 meters)
+                var allAggregationData = getAllAggregationSummaryData();
+                var allAnalysisData = getAllAnalysisSummaryData();
+                
+                // Organize data by flood extent
+                var meters = [24, 25, 26, 27, 28, 29, 30];
+                meters.forEach(function(meter) {
+                    context.allFloodExtents[meter] = {
+                        aggregationSummary: allAggregationData[meter] || null,
+                        analysisSummary: allAnalysisData[meter] || null
+                    };
+                });
+                
+                // Get DB_0 data
+                context.db0Data = getDB0Data();
+                
+                // Get StoTomasHouseholdsjoined data
+                context.householdsData = getStoTomasHouseholdsData();
                 
                 return context;
             } catch (e) {
@@ -9393,6 +9418,9 @@
                     floodExtentMeter: null,
                     demographics: null,
                     minimumNeeds: null,
+                    allFloodExtents: {},
+                    db0Data: null,
+                    householdsData: null,
                     timestamp: new Date().toISOString()
                 };
             }
@@ -9523,10 +9551,46 @@
                 // Get context
                 var context = getChatContext();
                 
-                // Build system instruction
+                // Check data size and warn if very large
+                try {
+                    var contextSize = JSON.stringify(context).length;
+                    var contextSizeKB = (contextSize / 1024).toFixed(2);
+                    var contextSizeMB = (contextSize / (1024 * 1024)).toFixed(2);
+                    console.log('Chat context size: ' + contextSizeKB + ' KB (' + contextSizeMB + ' MB)');
+                    
+                    // Warn if context is very large (Gemini has token limits)
+                    if (contextSize > 1000000) { // > 1MB
+                        console.warn('Warning: Chat context is very large (' + contextSizeMB + ' MB). This may exceed Gemini token limits.');
+                    }
+                } catch (e) {
+                    console.warn('Could not calculate context size:', e);
+                }
+                
+                // Build system instruction with comprehensive data explanation
                 var systemInstruction = 'You are an AI assistant for a flood impact assessment application called PROJECT TOMaS (Tactical Overlay for Mapping and Safety). ' +
                     'You help users understand flood impact data including affected population, demographics, displacement, and minimum needs. ' +
-                    'Current context: ' + JSON.stringify(context, null, 2) + '. ' +
+                    '\n\n' +
+                    'DATA STRUCTURE:\n' +
+                    'The context includes comprehensive flood impact data organized as follows:\n' +
+                    '1. allFloodExtents: Contains complete aggregation summary and analysis summary data for all flood extents (24, 25, 26, 27, 28, 29, and 30 meters).\n' +
+                    '   - Each flood extent has two data types:\n' +
+                    '     * aggregationSummary: Detailed data by barangay/aggregation area with population demographics, displacement, and minimum needs.\n' +
+                    '     * analysisSummary: Overall analysis data for the flood extent including hazard counts, total affected population, and aggregated statistics.\n' +
+                    '2. db0Data: Database reference data (DB_0.js) containing additional geographic and administrative information.\n' +
+                    '3. householdsData: Household-level data (StoTomasHouseholdsjoined_layer_1.js) with detailed family and individual information.\n' +
+                    '4. demographics: Filtered demographic data for currently selected barangays and flood extent.\n' +
+                    '5. minimumNeeds: Filtered minimum needs data for currently selected barangays and flood extent.\n' +
+                    '6. selectedBarangays: Array of currently selected barangay names.\n' +
+                    '7. floodExtentMeter: Currently selected flood extent in meters (24-30).\n' +
+                    '\n' +
+                    'When answering questions:\n' +
+                    '- Use the comprehensive data in allFloodExtents to answer questions about any flood extent, not just the currently selected one.\n' +
+                    '- Compare data across different flood extents when relevant.\n' +
+                    '- Reference specific barangays, aggregation areas, or flood extents in your answers.\n' +
+                    '- Use the analysis summary data for overall statistics and the aggregation summary for barangay-level details.\n' +
+                    '- If asked about specific data that exists in the context, provide accurate numbers and details.\n' +
+                    '\n' +
+                    'Current context: ' + JSON.stringify(context, null, 2) + '\n\n' +
                     'Provide clear, concise, and helpful answers about the flood impact data. ' +
                     'If specific data is not available in the context, let the user know.';
                 
@@ -9602,6 +9666,15 @@
                                 throw new Error('Invalid API key. Please check your Gemini API key.');
                             } else if (response.status === 429) {
                                 throw new Error('Rate limit exceeded. Please try again later.');
+                            } else if (response.status === 400) {
+                                var errorMsg = err.error ? err.error.message : response.statusText;
+                                // Check if it's a payload size issue
+                                if (errorMsg && (errorMsg.toLowerCase().indexOf('too large') >= 0 || 
+                                    errorMsg.toLowerCase().indexOf('token') >= 0 ||
+                                    errorMsg.toLowerCase().indexOf('limit') >= 0)) {
+                                    throw new Error('Request payload is too large. The data context may exceed Gemini token limits. Please try asking a more specific question.');
+                                }
+                                throw new Error('API request failed: ' + errorMsg);
                             } else {
                                 throw new Error('API request failed: ' + (err.error ? err.error.message : response.statusText));
                             }
@@ -9627,7 +9700,11 @@
                 })
                 .catch(function(error) {
                     console.error('Error calling Gemini API:', error);
-                    addChatMessage('assistant', '❌ Error: ' + error.message + '. Please try again or check your API key.');
+                    var errorMessage = '❌ Error: ' + error.message;
+                    if (error.message && error.message.indexOf('too large') >= 0) {
+                        errorMessage += '\n\nTip: The data context is very large. Try asking more specific questions about particular flood extents or barangays.';
+                    }
+                    addChatMessage('assistant', errorMessage);
                 })
                 .finally(function() {
                     if (loadingEl) loadingEl.style.display = 'none';
@@ -9739,47 +9816,47 @@
                 
                 // Send on button click
                 if (sendBtn) {
-                    // Remove any existing listeners by cloning the button
-                    if (sendBtn._wired) {
-                        var newSendBtn = sendBtn.cloneNode(true);
-                        sendBtn.parentNode.replaceChild(newSendBtn, sendBtn);
-                        sendBtn = newSendBtn;
+                    // Only add listener if not already wired
+                    if (!sendBtn._wired) {
+                        sendBtn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (inputEl && inputEl.value.trim()) {
+                                console.log('AI Chat: Sending message:', inputEl.value.trim());
+                                sendChatMessage(inputEl.value.trim());
+                                inputEl.value = '';
+                            } else {
+                                console.warn('AI Chat: Cannot send - inputEl:', !!inputEl, 'value:', inputEl ? inputEl.value : 'N/A');
+                            }
+                        });
+                        sendBtn._wired = true;
+                        console.log('AI Chat: Send button event listener attached');
                     }
-                    sendBtn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (inputEl && inputEl.value.trim()) {
-                            console.log('AI Chat: Sending message:', inputEl.value.trim());
-                            sendChatMessage(inputEl.value.trim());
-                            inputEl.value = '';
-                        } else {
-                            console.warn('AI Chat: Cannot send - inputEl:', !!inputEl, 'value:', inputEl ? inputEl.value : 'N/A');
-                        }
-                    });
-                    sendBtn._wired = true;
                 } else {
                     console.warn('AI Chat: Send button not found');
                 }
                 
                 // Send on Enter key
                 if (inputEl) {
-                    // Remove any existing listeners by cloning the input
-                    if (inputEl._wired) {
-                        var newInputEl = inputEl.cloneNode(true);
-                        inputEl.parentNode.replaceChild(newInputEl, inputEl);
-                        inputEl = newInputEl;
-                    }
-                    inputEl.addEventListener('keypress', function(e) {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            if (this.value.trim()) {
-                                console.log('AI Chat: Sending message via Enter:', this.value.trim());
-                                sendChatMessage(this.value.trim());
-                                this.value = '';
+                    // Only add listener if not already wired
+                    if (!inputEl._wired) {
+                        inputEl.addEventListener('keypress', function(e) {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                if (this.value.trim()) {
+                                    console.log('AI Chat: Sending message via Enter:', this.value.trim());
+                                    sendChatMessage(this.value.trim());
+                                    this.value = '';
+                                }
                             }
-                        }
-                    });
-                    inputEl._wired = true;
+                        });
+                        inputEl._wired = true;
+                        // Ensure input is enabled and focusable
+                        inputEl.disabled = false;
+                        inputEl.readOnly = false;
+                        inputEl.style.pointerEvents = 'auto';
+                        console.log('AI Chat: Input event listener attached');
+                    }
                 } else {
                     console.warn('AI Chat: Input element not found');
                 }
@@ -11449,6 +11526,131 @@
         }
         
         /**
+         * Gets analysis summary data for a given meter level.
+         * Returns the GeoJSON data object from the corresponding analysis summary file.
+         * @param {string|number} meter - The meter level (24, 25, 26, 27, 28, 29, or 30)
+         * @returns {object|null} The analysis summary GeoJSON data or null if not found
+         */
+        function getAnalysisSummaryData(meter) {
+            try {
+                var meterNum = parseInt(String(meter).replace(/[^0-9]/g, ''), 10);
+                var dataVarName = '';
+                
+                if (meterNum === 24) {
+                    dataVarName = 'json_24MetersAnalysisSummary_0';
+                } else if (meterNum === 25) {
+                    dataVarName = 'json_25MetersAnalysisSummary_2';
+                } else if (meterNum === 26) {
+                    dataVarName = 'json_26MetersAnalysisSummary_4';
+                } else if (meterNum === 27) {
+                    dataVarName = 'json_27MetersAnalysisSummary_6';
+                } else if (meterNum === 28) {
+                    dataVarName = 'json_28MetersAnalysisSummary_8';
+                } else if (meterNum === 29) {
+                    dataVarName = 'json_29MetersAnalysisSummary_10';
+                } else if (meterNum === 30) {
+                    dataVarName = 'json_30MetersAnalysisSummary_12';
+                }
+                
+                if (dataVarName && window[dataVarName]) {
+                    return window[dataVarName];
+                }
+                
+                return null;
+            } catch (e) {
+                console.error('Error getting analysis summary data:', e);
+                return null;
+            }
+        }
+        
+        /**
+         * Gets all aggregation summary data for all flood extents (24-30 meters).
+         * Returns an object with meter levels as keys and aggregation data as values.
+         * @returns {object} Object with all aggregation summary data organized by meter level
+         */
+        function getAllAggregationSummaryData() {
+            try {
+                var allData = {};
+                var meters = [24, 25, 26, 27, 28, 29, 30];
+                
+                meters.forEach(function(meter) {
+                    var data = getAggregationSummaryData(meter);
+                    if (data) {
+                        allData[meter] = data;
+                    }
+                });
+                
+                return allData;
+            } catch (e) {
+                console.error('Error getting all aggregation summary data:', e);
+                return {};
+            }
+        }
+        
+        /**
+         * Gets all analysis summary data for all flood extents (24-30 meters).
+         * Returns an object with meter levels as keys and analysis data as values.
+         * @returns {object} Object with all analysis summary data organized by meter level
+         */
+        function getAllAnalysisSummaryData() {
+            try {
+                var allData = {};
+                var meters = [24, 25, 26, 27, 28, 29, 30];
+                
+                meters.forEach(function(meter) {
+                    var data = getAnalysisSummaryData(meter);
+                    if (data) {
+                        allData[meter] = data;
+                    }
+                });
+                
+                return allData;
+            } catch (e) {
+                console.error('Error getting all analysis summary data:', e);
+                return {};
+            }
+        }
+        
+        /**
+         * Gets DB_0.js data.
+         * Returns the GeoJSON data object from DB_0.js file.
+         * @returns {object|null} The DB_0 GeoJSON data or null if not found
+         */
+        function getDB0Data() {
+            try {
+                if (typeof json_DB_0 !== 'undefined' && json_DB_0) {
+                    return json_DB_0;
+                }
+                return null;
+            } catch (e) {
+                console.error('Error getting DB_0 data:', e);
+                return null;
+            }
+        }
+        
+        /**
+         * Gets StoTomasHouseholdsjoined_layer_1.js data.
+         * Returns the GeoJSON data object from StoTomasHouseholdsjoined_layer_1.js file.
+         * @returns {object|null} The StoTomasHouseholdsjoined GeoJSON data or null if not found
+         */
+        function getStoTomasHouseholdsData() {
+            try {
+                // Check for the primary variable name
+                if (typeof json_StoTomasHouseholdsjoined_layer_1 !== 'undefined' && json_StoTomasHouseholdsjoined_layer_1) {
+                    return json_StoTomasHouseholdsjoined_layer_1;
+                }
+                // Check for alias variable name
+                if (typeof json_FinalHouseholdstotomas_householdsnew__joined_layer_0 !== 'undefined' && json_FinalHouseholdstotomas_householdsnew__joined_layer_0) {
+                    return json_FinalHouseholdstotomas_householdsnew__joined_layer_0;
+                }
+                return null;
+            } catch (e) {
+                console.error('Error getting StoTomasHouseholdsjoined data:', e);
+                return null;
+            }
+        }
+        
+        /**
          * Normalizes a name for comparison by removing special characters, spaces, and converting to lowercase.
          * @param {string} name - The name to normalize
          * @returns {string} Normalized name
@@ -11864,12 +12066,6 @@
                             console.log('Filtered demographics by barangays:', aggregatedDemographics);
                             updateDemographicsCharts(aggregatedDemographics);
                             
-                            // Generate AI insights when impact report is viewed
-                            if (typeof generateAIInsights === 'function') {
-                                setTimeout(function() {
-                                    generateAIInsights();
-                                }, 1000);
-                            }
                         } else {
                             console.error('No aggregation data found for meter:', meter);
                             alert('Aggregation data not available for ' + meter + ' meters.');
@@ -11892,12 +12088,6 @@
                                 var aggregatedDemographics = filterAndAggregateByBarangays(aggregationData, selectedBarangays);
                                 updateDemographicsCharts(aggregatedDemographics);
                                 
-                                // Generate AI insights
-                                if (typeof generateAIInsights === 'function') {
-                                    setTimeout(function() {
-                                        generateAIInsights();
-                                    }, 500);
-                                }
                             }
                         }, 500);
                     }
@@ -12508,12 +12698,6 @@
                             return;
                         }
                         showMinimumNeedsOffcanvas(meterVal);
-                        // Generate insights when minimum needs is viewed
-                        if (typeof generateAIInsights === 'function') {
-                            setTimeout(function() {
-                                generateAIInsights();
-                            }, 500);
-                        }
                     } catch (e) {
                         console.error('Error showing minimum needs offcanvas:', e);
                     }
@@ -12521,61 +12705,9 @@
                 minimumNeedsBtn._wired = true;
             }
             
-            // Wire AI Assistant button
-            var aiAssistantBtn = document.getElementById('aiAssistantBtn');
-            if (aiAssistantBtn && !aiAssistantBtn._wired) {
-                aiAssistantBtn.addEventListener('click', function() {
-                    try {
-                        showAIChatOffcanvas();
-                    } catch (e) {
-                        console.error('Error showing AI chat offcanvas:', e);
-                    }
-                });
-                aiAssistantBtn._wired = true;
-            }
-            
             // Setup AI Chat Assistant
             if (typeof setupAIChatAssistant === 'function') {
                 setupAIChatAssistant();
-            }
-            
-            // Setup AI Insights Panel controls
-            var insightsToggle = document.getElementById('ai-insights-toggle');
-            var insightsClose = document.getElementById('ai-insights-close');
-            var insightsRefresh = document.getElementById('ai-insights-refresh');
-            
-            if (insightsToggle) {
-                insightsToggle.addEventListener('click', function() {
-                    var panel = document.getElementById('ai-insights-panel');
-                    if (panel) {
-                        if (panel.classList.contains('collapsed')) {
-                            panel.classList.remove('collapsed');
-                            this.querySelector('i').classList.remove('fa-chevron-down');
-                            this.querySelector('i').classList.add('fa-chevron-up');
-                        } else {
-                            panel.classList.add('collapsed');
-                            this.querySelector('i').classList.remove('fa-chevron-up');
-                            this.querySelector('i').classList.add('fa-chevron-down');
-                        }
-                    }
-                });
-            }
-            
-            if (insightsClose) {
-                insightsClose.addEventListener('click', function() {
-                    var panel = document.getElementById('ai-insights-panel');
-                    if (panel) {
-                        panel.style.display = 'none';
-                    }
-                });
-            }
-            
-            if (insightsRefresh) {
-                insightsRefresh.addEventListener('click', function() {
-                    if (typeof generateAIInsights === 'function') {
-                        generateAIInsights();
-                    }
-                });
             }
             
             // Set up Bootstrap offcanvas event listeners for AI chat offcanvas to sync width
@@ -12588,11 +12720,6 @@
                 offcanvasAIChatEl.addEventListener('hidden.bs.offcanvas', function() {
                     syncAIChatOffcanvasWidth();
                 });
-            }
-            
-            // Show insights panel on load
-            if (typeof showInsightsPanel === 'function') {
-                showInsightsPanel();
             }
             
             // Set up Bootstrap offcanvas event listeners for impact report offcanvas to sync width
@@ -12816,7 +12943,16 @@
                             }
                         });
                         input._wired = true;
+                        // Ensure input is enabled and focusable
+                        input.disabled = false;
+                        input.readOnly = false;
+                        input.style.pointerEvents = 'auto';
                         console.log('AI Chat: Input event listener attached');
+                    } else if (input) {
+                        // Ensure input is enabled even if already wired
+                        input.disabled = false;
+                        input.readOnly = false;
+                        input.style.pointerEvents = 'auto';
                     }
                 }
                 
@@ -13150,38 +13286,5 @@
         <button id="ai-chat-float-btn" title="Open AI Assistant">
             <i class="fas fa-robot"></i>
         </button>
-        
-        <!-- AI Insights Floating Panel -->
-        <div id="ai-insights-panel" class="ai-insights-panel">
-            <div class="ai-insights-header">
-                <div class="ai-insights-title">
-                    <i class="fas fa-lightbulb"></i>
-                    <span>AI Insights</span>
-                </div>
-                <div class="ai-insights-controls">
-                    <button id="ai-insights-refresh" class="ai-insights-btn" title="Refresh insights">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                    <button id="ai-insights-toggle" class="ai-insights-btn" title="Collapse/Expand">
-                        <i class="fas fa-chevron-up"></i>
-                    </button>
-                    <button id="ai-insights-close" class="ai-insights-btn" title="Close">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-            <div id="ai-insights-content" class="ai-insights-content">
-                <div class="ai-insights-loading" id="ai-insights-loading">
-                    <div class="ai-insights-spinner"></div>
-                    <p>Generating insights...</p>
-                </div>
-                <div id="ai-insights-list" class="ai-insights-list" style="display: none;">
-                    <!-- Insights will be dynamically inserted here -->
-                </div>
-                <div id="ai-insights-empty" class="ai-insights-empty" style="display: none;">
-                    <p>No insights available. Select a flood extent and barangay to generate insights.</p>
-                </div>
-            </div>
-        </div>
         </body>
         </html>
