@@ -909,6 +909,391 @@
             margin-top: 0.5rem;
         }
         
+        /* AI Chat Offcanvas Styling */
+        #offcanvasAIChat {
+            height: 500px;
+            width: calc(100vw - 320px);
+            left: 320px;
+            background: #23272f;
+            color: #fff;
+            transition: width 0.3s ease, left 0.3s ease;
+        }
+        
+        #map-container.charts-open ~ #offcanvasAIChat {
+            width: calc(100vw - 720px);
+        }
+        
+        #offcanvasAIChat .offcanvas-header {
+            background: #24b2ff;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        #offcanvasAIChat .offcanvas-title {
+            color: #fff;
+            font-weight: 700;
+        }
+        
+        #offcanvasAIChat .btn-close {
+            filter: invert(1);
+        }
+        
+        #offcanvasAIChat .offcanvas-body {
+            background: #23272f;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            height: 100%;
+        }
+        
+        .ai-chat-messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .ai-chat-welcome {
+            background: rgba(42, 47, 57, 0.5);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border-left: 3px solid #f39c12;
+        }
+        
+        .ai-chat-welcome p {
+            margin: 0.5rem 0;
+            color: #fafafa;
+        }
+        
+        .ai-chat-welcome ul {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+            color: #b0b0b0;
+        }
+        
+        .ai-chat-message {
+            display: flex;
+            margin-bottom: 1rem;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .ai-chat-message.user {
+            justify-content: flex-end;
+        }
+        
+        .ai-chat-message.assistant {
+            justify-content: flex-start;
+        }
+        
+        .ai-chat-bubble {
+            max-width: 75%;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            word-wrap: break-word;
+        }
+        
+        .ai-chat-message.user .ai-chat-bubble {
+            background: #24b2ff;
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .ai-chat-message.assistant .ai-chat-bubble {
+            background: #2a2f39;
+            color: #fafafa;
+            border: 1px solid #3a3f4a;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .ai-chat-input-container {
+            border-top: 1px solid #3a3f4a;
+            padding: 1rem;
+            background: #1e2329;
+        }
+        
+        .ai-chat-suggestions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.75rem;
+        }
+        
+        .ai-suggestion-btn {
+            background: #2a2f39;
+            border: 1px solid #3a3f4a;
+            color: #fafafa;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .ai-suggestion-btn:hover {
+            background: #3a3f4a;
+            border-color: #f39c12;
+        }
+        
+        .ai-chat-input-wrapper {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .ai-chat-input {
+            flex: 1;
+            background: #2a2f39;
+            border: 1px solid #3a3f4a;
+            color: #fafafa;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .ai-chat-input:focus {
+            outline: none;
+            border-color: #f39c12;
+        }
+        
+        .ai-chat-send-btn {
+            background: #f39c12;
+            border: none;
+            color: #fff;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .ai-chat-send-btn:hover:not(:disabled) {
+            background: #e67e22;
+        }
+        
+        .ai-chat-send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .ai-chat-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.75rem;
+        }
+        
+        .ai-chat-action-btn {
+            background: transparent;
+            border: 1px solid #3a3f4a;
+            color: #b0b0b0;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .ai-chat-action-btn:hover {
+            background: #2a2f39;
+            color: #fafafa;
+        }
+        
+        .ai-chat-loading {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #b0b0b0;
+            font-size: 0.85rem;
+        }
+        
+        .ai-typing-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #f39c12;
+            animation: typing 1.4s infinite;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+        
+        /* Floating Chat Button */
+        #ai-chat-float-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #f39c12;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4);
+            z-index: 999;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #ai-chat-float-btn:hover {
+            background: #e67e22;
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(243, 156, 18, 0.6);
+        }
+        
+        /* AI Insights Panel Styling */
+        #ai-insights-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 350px;
+            max-height: 500px;
+            background: #2a2f39;
+            border: 1px solid #3a3f4a;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+        
+        #ai-insights-panel.collapsed {
+            max-height: 50px;
+        }
+        
+        #ai-insights-panel.collapsed .ai-insights-content {
+            display: none;
+        }
+        
+        .ai-insights-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: #1e2329;
+            border-bottom: 1px solid #3a3f4a;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .ai-insights-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #f39c12;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        
+        .ai-insights-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .ai-insights-btn {
+            background: transparent;
+            border: 1px solid #3a3f4a;
+            color: #b0b0b0;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 0.85rem;
+        }
+        
+        .ai-insights-btn:hover {
+            background: #2a2f39;
+            color: #f39c12;
+            border-color: #f39c12;
+        }
+        
+        .ai-insights-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        
+        .ai-insights-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: #b0b0b0;
+        }
+        
+        .ai-insights-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #3a3f4a;
+            border-top-color: #f39c12;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .ai-insights-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .ai-insight-item {
+            background: #1e2329;
+            border-left: 3px solid #f39c12;
+            border-radius: 6px;
+            padding: 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        .ai-insight-item:hover {
+            background: #23272f;
+            transform: translateX(4px);
+        }
+        
+        .ai-insight-category {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #f39c12;
+        }
+        
+        .ai-insight-text {
+            color: #fafafa;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 0;
+        }
+        
+        .ai-insights-empty {
+            text-align: center;
+            padding: 2rem;
+            color: #b0b0b0;
+        }
+        
         #offcanvasImpactReport .offcanvas-header {
             background: #24b2ff;
             border-bottom: 2px solid rgba(255, 255, 255, 0.1);
@@ -1285,55 +1670,346 @@
             position: fixed;
             right: 20px;
             bottom: 76px;
-            width: 340px;
-            max-height: 70vh;
+            width: 400px;
+            max-height: 75vh;
+            min-height: 500px;
             display: none;
             flex-direction: column;
-            background: #1e2329;
-            border: 1px solid #3a3f4a;
-            border-radius: 12px;
+            background: linear-gradient(135deg, #1e2329 0%, #161b22 100%);
+            border: 1px solid rgba(58, 63, 74, 0.8);
+            border-radius: 16px;
             overflow: hidden;
             z-index: 1200;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05) inset;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
         }
+        
         .ai-chat-header {
-            padding: 10px 12px;
-            background: #161b22;
-            border-bottom: 1px solid #2a2f39;
+            padding: 16px 18px;
+            background: linear-gradient(135deg, #161b22 0%, #1a1f26 100%);
+            border-bottom: 1px solid rgba(58, 63, 74, 0.6);
             display: flex;
             align-items: center;
             justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
-        .ai-chat-title { color: #f39c12; font-weight: 700; }
-        .ai-chat-actions { display: flex; gap: 6px; }
+        
+        .ai-chat-header-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        
+        .ai-chat-icon {
+            font-size: 28px;
+            line-height: 1;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        
+        .ai-chat-title-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        .ai-chat-title {
+            color: #f39c12;
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: 0.3px;
+            line-height: 1.3;
+        }
+        
+        .ai-chat-subtitle {
+            color: #8aa0b4;
+            font-size: 11px;
+            font-weight: 400;
+            letter-spacing: 0.2px;
+            opacity: 0.8;
+        }
+        
+        .ai-chat-actions {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .ai-chat-header-btn {
+            background: transparent;
+            border: none;
+            color: #b0b0b0;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 6px 8px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        .ai-chat-header-btn:hover {
+            background: rgba(58, 63, 74, 0.6);
+            color: #fff;
+            transform: scale(1.05);
+        }
+        
         .ai-chat-body {
-            padding: 10px 12px;
+            padding: 16px 18px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            max-height: 52vh;
-        }
-        .ai-msg { padding: 8px 10px; border-radius: 10px; max-width: 85%; }
-        .ai-msg.user { background: #243447; align-self: flex-end; border: 1px solid #355070; }
-        .ai-msg.assistant { background: #2a2f39; align-self: flex-start; border: 1px solid #3a3f4a; }
-        .ai-chat-input {
-            display: flex;
-            gap: 8px;
-            padding: 10px 12px;
-            border-top: 1px solid #2a2f39;
+            gap: 12px;
+            max-height: calc(75vh - 280px);
+            min-height: 200px;
+            flex: 1;
             background: #1e2329;
         }
-        .ai-chat-input input {
-            flex: 1 1 auto;
-            background: #14181d;
-            color: #fff;
-            border: 1px solid #3a3f4a;
-            border-radius: 8px;
-            padding: 8px 10px;
+        
+        .ai-chat-body::-webkit-scrollbar {
+            width: 6px;
         }
-        .ai-chat-input button { border-radius: 8px; background:#2a2f39; color:#fff; border:1px solid #3a3f4a; padding: 8px 10px; cursor: pointer; }
-        .ai-key-hint { color:#8aa0b4; font-size: 12px; padding: 6px 12px; border-top: 1px dashed #2a2f39; }
+        
+        .ai-chat-body::-webkit-scrollbar-track {
+            background: rgba(26, 31, 38, 0.5);
+        }
+        
+        .ai-chat-body::-webkit-scrollbar-thumb {
+            background: rgba(58, 63, 74, 0.8);
+            border-radius: 3px;
+        }
+        
+        .ai-chat-body::-webkit-scrollbar-thumb:hover {
+            background: rgba(58, 63, 74, 1);
+        }
+        
+        .ai-msg {
+            padding: 12px 16px;
+            border-radius: 14px;
+            max-width: 85%;
+            font-size: 14px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            animation: fadeInMessage 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        
+        @keyframes fadeInMessage {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .ai-msg.user {
+            background: linear-gradient(135deg, #24b2ff 0%, #189fd1 100%);
+            align-self: flex-end;
+            border: none;
+            color: #fff;
+            font-weight: 400;
+            box-shadow: 0 4px 12px rgba(36, 178, 255, 0.3);
+        }
+        
+        .ai-msg.assistant {
+            background: linear-gradient(135deg, #2a2f39 0%, #1e2329 100%);
+            align-self: flex-start;
+            border: 1px solid rgba(58, 63, 74, 0.6);
+            color: #fafafa;
+            font-weight: 400;
+        }
+        
+        .ai-chat-input-container {
+            padding: 16px 18px;
+            border-top: 1px solid rgba(58, 63, 74, 0.6);
+            background: linear-gradient(135deg, #161b22 0%, #1a1f26 100%);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .ai-chat-suggestions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .ai-suggestion-btn {
+            background: rgba(42, 47, 57, 0.6);
+            border: 1px solid rgba(58, 63, 74, 0.6);
+            color: #fafafa;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            font-weight: 400;
+            line-height: 1.4;
+        }
+        
+        .ai-suggestion-btn:hover {
+            background: rgba(58, 63, 74, 0.8);
+            border-color: #f39c12;
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(243, 156, 18, 0.2);
+        }
+        
+        .ai-suggestion-btn span {
+            display: block;
+        }
+        
+        .ai-chat-input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .ai-chat-input-field {
+            flex: 1;
+            background: rgba(42, 47, 57, 0.8);
+            border: 1px solid rgba(58, 63, 74, 0.8);
+            color: #fafafa;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        
+        .ai-chat-input-field::placeholder {
+            color: #6a7a8a;
+        }
+        
+        .ai-chat-input-field:focus {
+            outline: none;
+            border-color: #f39c12;
+            background: rgba(42, 47, 57, 1);
+            box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.1);
+        }
+        
+        .ai-chat-send-button {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            border: none;
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+        }
+        
+        .ai-chat-send-button:hover:not(:disabled) {
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(243, 156, 18, 0.4);
+        }
+        
+        .ai-chat-send-button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        
+        .ai-chat-send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .ai-chat-footer-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .ai-chat-footer-btn {
+            background: transparent;
+            border: 1px solid rgba(58, 63, 74, 0.6);
+            color: #b0b0b0;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 400;
+        }
+        
+        .ai-chat-footer-btn:hover {
+            background: rgba(42, 47, 57, 0.6);
+            border-color: rgba(58, 63, 74, 0.8);
+            color: #fafafa;
+        }
+        
+        .ai-key-hint {
+            color: #f39c12;
+            font-size: 12px;
+            padding: 10px 18px;
+            border-top: 1px dashed rgba(58, 63, 74, 0.6);
+            background: rgba(243, 156, 18, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 400;
+        }
+        
+        .ai-key-hint i {
+            font-size: 14px;
+        }
+        
+        /* Welcome message styling */
+        .ai-chat-welcome {
+            background: rgba(42, 47, 57, 0.4);
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 3px solid #f39c12;
+            margin-bottom: 8px;
+        }
+        
+        .ai-chat-welcome-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        .ai-chat-welcome-title {
+            color: #fafafa;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            text-align: center;
+        }
+        
+        .ai-chat-welcome-text {
+            color: #b0b0b0;
+            font-size: 13px;
+            margin: 12px 0 8px 0;
+            font-weight: 400;
+        }
+        
+        .ai-chat-welcome-list {
+            margin: 8px 0 0 0;
+            padding-left: 20px;
+            color: #9aa0ae;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+        
+        .ai-chat-welcome-list li {
+            margin-bottom: 4px;
+        }
         
         .modal-header {
             cursor: move;
@@ -1740,6 +2416,10 @@
                         <button id="toggleInfographicsBtn" style="margin-top: 12px; padding: 0.5rem 0.8rem; border-radius: 8px; border: 1px solid #3a3f4a; background:#2a2f39; color:#fff; cursor:pointer; font-weight:600; width: 100%;">Impact Report</button>
                         <button type="button" id="minimumNeedsBtn" class="btn btn-secondary" 
                                 style="margin-top: 8px; padding: 0.5rem 0.8rem; border-radius: 8px; border: 1px solid #3a3f4a; background:#2a2f39; color:#fff; cursor:pointer; font-weight:600; width: 100%;">Minimum Needs</button>
+                        <button type="button" id="aiAssistantBtn" class="btn btn-secondary" 
+                                style="margin-top: 8px; padding: 0.5rem 0.8rem; border-radius: 8px; border: 1px solid #3a3f4a; background:#2a2f39; color:#fff; cursor:pointer; font-weight:600; width: 100%;">
+                            <i class="fas fa-robot" style="margin-right: 0.5rem;"></i>AI Assistant
+                        </button>
                     </div>
                             </div>
                             </div>
@@ -2042,21 +2722,68 @@
                         </div>
                     </div>
                     
-                    <!-- AI Chat Widget - Removed -->
+                    <!-- AI Chat Widget - Enhanced Popup -->
                     <div id="ai-chat-panel" class="ai-chat-panel">
                         <div class="ai-chat-header">
-                            <div class="ai-chat-title">Chat with TOMAS</div>
+                            <div class="ai-chat-header-content">
+                                <div class="ai-chat-icon">🤖</div>
+                                <div class="ai-chat-title-wrapper">
+                                    <div class="ai-chat-title">Chat with TOMAS</div>
+                                    <div class="ai-chat-subtitle">AI Assistant for Flood Impact Assessment</div>
+                                </div>
+                            </div>
                             <div class="ai-chat-actions">
-                                <button id="ai-chat-docs" class="close-btn" title="Proxy setup (docs)">?</button>
-                                <button id="ai-chat-settings" class="close-btn" title="Settings">⚙</button>
-                                <button id="ai-chat-close" class="close-btn" title="Close">×</button>
+                                <button id="ai-chat-docs" class="ai-chat-header-btn" title="Documentation">?</button>
+                                <button id="ai-chat-settings" class="ai-chat-header-btn" title="Settings">⚙</button>
+                                <button id="ai-chat-close" class="ai-chat-header-btn" title="Close">×</button>
                             </div>
                         </div>
-                        <div id="ai-chat-body" class="ai-chat-body"></div>
-                        <div class="ai-key-hint" id="ai-key-hint" style="display:none;">No API key set. Click ⚙ to add your OpenAI API key locally.</div>
-                        <div class="ai-chat-input">
-                            <input id="ai-chat-input" type="text" placeholder="Ask about the data..." />
-                            <button id="ai-chat-send">Send</button>
+                        <div id="ai-chat-body" class="ai-chat-body">
+                            <div class="ai-chat-welcome" id="ai-chat-welcome">
+                                <div class="ai-chat-welcome-icon">👋</div>
+                                <p class="ai-chat-welcome-title">Hello! I'm your AI assistant</p>
+                                <p class="ai-chat-welcome-text">Ask me questions about:</p>
+                                <ul class="ai-chat-welcome-list">
+                                    <li>Affected population and demographics</li>
+                                    <li>Displacement data and statistics</li>
+                                    <li>Minimum needs requirements</li>
+                                    <li>Comparisons between barangays</li>
+                                    <li>Key insights from the data</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="ai-key-hint" id="ai-key-hint" style="display:none;">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>No API key set. Click ⚙ to configure your API settings.</span>
+                        </div>
+                        <div class="ai-chat-input-container">
+                            <div class="ai-chat-suggestions" id="ai-chat-suggestions">
+                                <button class="ai-suggestion-btn" data-suggestion="What is the total affected population?">
+                                    <span>What is the total affected population?</span>
+                                </button>
+                                <button class="ai-suggestion-btn" data-suggestion="Which barangay has the highest displacement rate?">
+                                    <span>Which barangay has the highest displacement rate?</span>
+                                </button>
+                                <button class="ai-suggestion-btn" data-suggestion="What are the key minimum needs?">
+                                    <span>What are the key minimum needs?</span>
+                                </button>
+                            </div>
+                            <div class="ai-chat-input-wrapper">
+                                <input id="ai-chat-input" type="text" class="ai-chat-input-field" placeholder="Ask a question about the flood impact data..." />
+                                <button id="ai-chat-send" class="ai-chat-send-button" title="Send message">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                            <div class="ai-chat-footer-actions">
+                                <button id="ai-chat-clear" class="ai-chat-footer-btn" title="Clear chat history">
+                                    <i class="fas fa-trash-alt"></i>
+                                    <span>Clear</span>
+                                </button>
+                                <div id="ai-chat-loading" class="ai-chat-loading" style="display: none;">
+                                    <span class="ai-typing-indicator"></span>
+                                    <span>AI is thinking...</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2928,6 +3655,13 @@
             // Don't show charts panel when flood extent is selected
             // Charts panel is hidden when flood extent is selected
             hideChartsPanel();
+            
+            // Generate AI insights when barangay selection changes
+            if (typeof generateAIInsights === 'function') {
+                setTimeout(function() {
+                    generateAIInsights();
+                }, 500);
+            }
         }
         
         /**
@@ -6082,6 +6816,12 @@
                     // Process aggregation data and update charts for the selected flood extent
                     setTimeout(function() {
                         processAggregationDataForFloodExtent(selectedValue);
+                        // Generate AI insights when flood extent is selected
+                        if (typeof generateAIInsights === 'function') {
+                            setTimeout(function() {
+                                generateAIInsights();
+                            }, 800);
+                        }
                     }, 300); // Small delay to ensure data is loaded
                     
                     if (selectedValue === '24') {
@@ -8267,6 +9007,8 @@
                 syncImpactReportOffcanvasWidth();
                 // Sync minimum needs offcanvas width
                 syncMinimumNeedsOffcanvasWidth();
+                // Sync AI chat offcanvas width
+                syncAIChatOffcanvasWidth();
                 updateCharts();
             }
         }
@@ -8289,6 +9031,8 @@
                 syncImpactReportOffcanvasWidth();
                 // Sync minimum needs offcanvas width
                 syncMinimumNeedsOffcanvasWidth();
+                // Sync AI chat offcanvas width
+                syncAIChatOffcanvasWidth();
                 // Update top pane position when charts panel is hidden
                 updateTopPanePosition();
             }
@@ -8539,6 +9283,813 @@
                 console.error('Error showing minimum needs offcanvas:', e);
             }
         }
+        
+        // ==================== AI INTEGRATION ====================
+        
+        /**
+         * Google Gemini API Configuration
+         * API key is stored in localStorage for security
+         */
+        var AIConfig = {
+            apiKey: 'AIzaSyA2nIMIDptgsKohxm8v6W6JCtRrpwKuRx4', // Default API key
+            apiEndpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+            model: 'gemini-2.5-flash',
+            maxTokens: 1000,
+            temperature: 0.7,
+            cacheEnabled: true,
+            cacheExpiry: 300000 // 5 minutes in milliseconds
+        };
+        
+        // Chat message cache
+        var chatMessageCache = {};
+        var chatHistory = [];
+        
+        /**
+         * Gets Gemini API key from localStorage or uses default
+         * @returns {string} API key or empty string
+         */
+        function getGeminiAPIKey() {
+            try {
+                var storedKey = localStorage.getItem('gemini_api_key');
+                if (storedKey && storedKey.trim() !== '') {
+                    return storedKey.trim();
+                }
+                // Return default key if no stored key
+                return AIConfig.apiKey;
+            } catch (e) {
+                console.warn('Could not access localStorage:', e);
+                return AIConfig.apiKey;
+            }
+        }
+        
+        /**
+         * Sets Gemini API key in localStorage
+         * @param {string} key - The API key
+         */
+        function setGeminiAPIKey(key) {
+            try {
+                localStorage.setItem('gemini_api_key', key || '');
+                AIConfig.apiKey = key || AIConfig.apiKey;
+            } catch (e) {
+                console.warn('Could not save API key to localStorage:', e);
+            }
+        }
+        
+        /**
+         * Syncs the AI chat offcanvas width with the map container
+         */
+        function syncAIChatOffcanvasWidth() {
+            var offcanvasAIChat = document.getElementById('offcanvasAIChat');
+            var mapContainer = document.getElementById('map-container');
+            if (offcanvasAIChat && mapContainer) {
+                var isChartsOpen = mapContainer.classList.contains('charts-open');
+                if (isChartsOpen) {
+                    offcanvasAIChat.style.width = 'calc(100vw - 720px)';
+                    offcanvasAIChat.style.left = '320px';
+                } else {
+                    offcanvasAIChat.style.width = 'calc(100vw - 320px)';
+                    offcanvasAIChat.style.left = '320px';
+                }
+            }
+        }
+        
+        /**
+         * Gathers current app context for AI chat
+         * @returns {Object} Context object with current state
+         */
+        function getChatContext() {
+            try {
+                var context = {
+                    selectedBarangays: getSelectedBarangays() || [],
+                    floodExtent: '',
+                    floodExtentMeter: null,
+                    demographics: null,
+                    minimumNeeds: null,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Get flood extent
+                var floodExtentDropdown = document.getElementById('floodExtentDropdown');
+                if (floodExtentDropdown && floodExtentDropdown.value) {
+                    context.floodExtent = floodExtentDropdown.value;
+                    context.floodExtentMeter = parseInt(String(floodExtentDropdown.value).replace(/[^0-9]/g, ''), 10);
+                }
+                
+                // Get demographics data if available
+                if (context.floodExtentMeter && context.selectedBarangays.length > 0) {
+                    var aggregationData = getAggregationDataForMeter(context.floodExtentMeter);
+                    if (aggregationData) {
+                        context.demographics = filterAndAggregateByBarangays(aggregationData, context.selectedBarangays);
+                        context.minimumNeeds = filterAndAggregateMinimumNeeds(aggregationData, context.selectedBarangays);
+                    }
+                }
+                
+                return context;
+            } catch (e) {
+                console.error('Error getting chat context:', e);
+                return {
+                    selectedBarangays: [],
+                    floodExtent: '',
+                    floodExtentMeter: null,
+                    demographics: null,
+                    minimumNeeds: null,
+                    timestamp: new Date().toISOString()
+                };
+            }
+        }
+        
+        /**
+         * Adds a message to the chat UI
+         * @param {string} role - 'user' or 'assistant'
+         * @param {string} content - Message content
+         */
+        function addChatMessage(role, content) {
+            try {
+                var bodyContainer = document.getElementById('ai-chat-body');
+                if (!bodyContainer) return;
+                
+                // Hide welcome message if it exists
+                var welcome = bodyContainer.querySelector('#ai-chat-welcome');
+                if (welcome) {
+                    welcome.style.display = 'none';
+                }
+                
+                var messageDiv = document.createElement('div');
+                messageDiv.className = 'ai-msg ' + role;
+                messageDiv.textContent = content;
+                
+                bodyContainer.appendChild(messageDiv);
+                
+                // Scroll to bottom
+                bodyContainer.scrollTop = bodyContainer.scrollHeight;
+                
+                // Store in history
+                chatHistory.push({ role: role, content: content, timestamp: new Date().toISOString() });
+                
+                // Save to localStorage
+                try {
+                    localStorage.setItem('ai_chat_history', JSON.stringify(chatHistory.slice(-50))); // Keep last 50 messages
+                } catch (e) {
+                    console.warn('Could not save chat history:', e);
+                }
+            } catch (e) {
+                console.error('Error adding chat message:', e);
+            }
+        }
+        
+        /**
+         * Loads chat history from localStorage
+         */
+        function loadChatHistory() {
+            try {
+                var stored = localStorage.getItem('ai_chat_history');
+                if (stored) {
+                    chatHistory = JSON.parse(stored);
+                    var bodyContainer = document.getElementById('ai-chat-body');
+                    if (bodyContainer) {
+                        // Hide welcome message if there's history
+                        var welcome = bodyContainer.querySelector('#ai-chat-welcome');
+                        if (welcome && chatHistory.length > 0) {
+                            welcome.style.display = 'none';
+                        }
+                        // Clear existing messages (except welcome)
+                        var existingMessages = bodyContainer.querySelectorAll('.ai-msg');
+                        existingMessages.forEach(function(msg) {
+                            msg.remove();
+                        });
+                        // Load history
+                        chatHistory.forEach(function(msg) {
+                            addChatMessage(msg.role, msg.content);
+                        });
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not load chat history:', e);
+                chatHistory = [];
+            }
+        }
+        
+        /**
+         * Clears chat history
+         */
+        function clearChatHistory() {
+            chatHistory = [];
+            var bodyContainer = document.getElementById('ai-chat-body');
+            if (bodyContainer) {
+                // Clear all messages
+                var existingMessages = bodyContainer.querySelectorAll('.ai-msg');
+                existingMessages.forEach(function(msg) {
+                    msg.remove();
+                });
+                // Show welcome message
+                var welcome = bodyContainer.querySelector('#ai-chat-welcome');
+                if (welcome) {
+                    welcome.style.display = 'block';
+                }
+            }
+            try {
+                localStorage.removeItem('ai_chat_history');
+            } catch (e) {
+                console.warn('Could not clear chat history:', e);
+            }
+        }
+        
+        /**
+         * Sends a chat message to OpenAI API
+         * @param {string} message - User message
+         */
+        function sendChatMessage(message) {
+            try {
+                if (!message || message.trim() === '') return;
+                
+                // Check API key
+                var apiKey = getGeminiAPIKey();
+                if (!apiKey || apiKey === '') {
+                    addChatMessage('assistant', '⚠️ Please configure your Gemini API key. Click the settings button to add your API key.');
+                    return;
+                }
+                
+                // Add user message to UI
+                addChatMessage('user', message);
+                
+                // Show loading indicator
+                var loadingEl = document.getElementById('ai-chat-loading');
+                var sendBtn = document.getElementById('ai-chat-send') || document.getElementById('ai-chat-send-btn');
+                var inputEl = document.getElementById('ai-chat-input');
+                if (loadingEl) loadingEl.style.display = 'flex';
+                if (sendBtn) sendBtn.disabled = true;
+                if (inputEl) inputEl.disabled = true;
+                
+                // Get context
+                var context = getChatContext();
+                
+                // Build system instruction
+                var systemInstruction = 'You are an AI assistant for a flood impact assessment application called PROJECT TOMaS (Tactical Overlay for Mapping and Safety). ' +
+                    'You help users understand flood impact data including affected population, demographics, displacement, and minimum needs. ' +
+                    'Current context: ' + JSON.stringify(context, null, 2) + '. ' +
+                    'Provide clear, concise, and helpful answers about the flood impact data. ' +
+                    'If specific data is not available in the context, let the user know.';
+                
+                // Build conversation history for Gemini
+                var contents = [];
+                
+                // Add system instruction as first message
+                contents.push({
+                    role: 'user',
+                    parts: [{ text: systemInstruction }]
+                });
+                contents.push({
+                    role: 'model',
+                    parts: [{ text: 'I understand. I will help you analyze flood impact data for PROJECT TOMaS.' }]
+                });
+                
+                // Add chat history (last 10 messages for context)
+                var recentHistory = chatHistory.slice(-10);
+                recentHistory.forEach(function(msg) {
+                    if (msg.role === 'user') {
+                        contents.push({
+                            role: 'user',
+                            parts: [{ text: msg.content }]
+                        });
+                    } else if (msg.role === 'assistant') {
+                        contents.push({
+                            role: 'model',
+                            parts: [{ text: msg.content }]
+                        });
+                    }
+                });
+                
+                // Add current user message
+                contents.push({
+                    role: 'user',
+                    parts: [{ text: message }]
+                });
+                
+                // Check cache
+                var cacheKey = JSON.stringify(contents);
+                if (AIConfig.cacheEnabled && chatMessageCache[cacheKey]) {
+                    var cached = chatMessageCache[cacheKey];
+                    if (Date.now() - cached.timestamp < AIConfig.cacheExpiry) {
+                        setTimeout(function() {
+                            addChatMessage('assistant', cached.response);
+                            if (loadingEl) loadingEl.style.display = 'none';
+                            if (sendBtn) sendBtn.disabled = false;
+                            if (inputEl) inputEl.disabled = false;
+                        }, 300);
+                        return;
+                    }
+                }
+                
+                // Make API call to Gemini
+                var apiUrl = AIConfig.apiEndpoint + '?key=' + encodeURIComponent(apiKey);
+                fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: contents,
+                        generationConfig: {
+                            maxOutputTokens: AIConfig.maxTokens,
+                            temperature: AIConfig.temperature
+                        }
+                    })
+                })
+                .then(function(response) {
+                    if (!response.ok) {
+                        return response.json().then(function(err) {
+                            if (response.status === 401 || response.status === 403) {
+                                throw new Error('Invalid API key. Please check your Gemini API key.');
+                            } else if (response.status === 429) {
+                                throw new Error('Rate limit exceeded. Please try again later.');
+                            } else {
+                                throw new Error('API request failed: ' + (err.error ? err.error.message : response.statusText));
+                            }
+                        });
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts) {
+                        var assistantMessage = data.candidates[0].content.parts[0].text;
+                        addChatMessage('assistant', assistantMessage);
+                        
+                        // Cache response
+                        if (AIConfig.cacheEnabled) {
+                            chatMessageCache[cacheKey] = {
+                                response: assistantMessage,
+                                timestamp: Date.now()
+                            };
+                        }
+                    } else {
+                        throw new Error('No response from AI');
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error calling Gemini API:', error);
+                    addChatMessage('assistant', '❌ Error: ' + error.message + '. Please try again or check your API key.');
+                })
+                .finally(function() {
+                    if (loadingEl) loadingEl.style.display = 'none';
+                    if (sendBtn) sendBtn.disabled = false;
+                    if (inputEl) {
+                        inputEl.disabled = false;
+                        inputEl.focus();
+                    }
+                });
+            } catch (e) {
+                console.error('Error sending chat message:', e);
+                addChatMessage('assistant', '❌ An error occurred. Please try again.');
+                var loadingEl = document.getElementById('ai-chat-loading');
+                var sendBtn = document.getElementById('ai-chat-send') || document.getElementById('ai-chat-send-btn');
+                var inputEl = document.getElementById('ai-chat-input');
+                if (loadingEl) loadingEl.style.display = 'none';
+                if (sendBtn) sendBtn.disabled = false;
+                if (inputEl) {
+                    inputEl.disabled = false;
+                    inputEl.focus();
+                }
+            }
+        }
+        
+        /**
+         * Shows the AI chat popup panel
+         */
+        function showAIChatOffcanvas() {
+            try {
+                var panel = document.getElementById('ai-chat-panel');
+                if (!panel) {
+                    console.error('AI chat panel not found');
+                    return;
+                }
+                
+                // Load chat history
+                if (typeof loadChatHistory === 'function') {
+                    loadChatHistory();
+                }
+                
+                // Show panel
+                panel.style.display = 'flex';
+                
+                // Focus on input
+                setTimeout(function() {
+                    var input = document.getElementById('ai-chat-input');
+                    if (input) {
+                        input.focus();
+                    }
+                }, 100);
+                
+                // Setup settings button when panel is shown (in case it wasn't set up before)
+                setTimeout(function() {
+                    var settingsBtn = document.getElementById('ai-chat-settings');
+                    if (settingsBtn && !settingsBtn._wired) {
+                        settingsBtn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            try {
+                                var currentKey = getGeminiAPIKey();
+                                var maskedKey = currentKey ? (currentKey.substring(0, 7) + '...' + currentKey.substring(currentKey.length - 4)) : 'Not set';
+                                var newKey = prompt('Gemini API Key Configuration\n\nCurrent key: ' + maskedKey + '\n\nEnter your Gemini API key (or leave empty to use default):', currentKey);
+                                if (newKey !== null) {
+                                    setGeminiAPIKey(newKey.trim());
+                                    if (newKey.trim() === '') {
+                                        alert('Using default API key.');
+                                    } else {
+                                        alert('API key saved successfully!');
+                                    }
+                                }
+                            } catch (err) {
+                                console.error('Error in settings button:', err);
+                                alert('Error: ' + err.message);
+                            }
+                        });
+                        settingsBtn._wired = true;
+                    }
+                }, 100);
+                
+                // Focus input after offcanvas is shown
+                setTimeout(function() {
+                    var inputEl = document.getElementById('ai-chat-input');
+                    if (inputEl) {
+                        inputEl.focus();
+                    }
+                }, 300);
+            } catch (e) {
+                console.error('Error showing AI chat offcanvas:', e);
+            }
+        }
+        
+        /**
+         * Sets up the AI chat assistant interface and event listeners
+         */
+        function setupAIChatAssistant() {
+            try {
+                // Load API key
+                AIConfig.apiKey = getGeminiAPIKey();
+                
+                // Chat input and send button - use popup panel input
+                var inputEl = document.getElementById('ai-chat-input');
+                var sendBtn = document.getElementById('ai-chat-send');
+                var clearBtn = document.getElementById('ai-chat-clear');
+                var floatBtn = document.getElementById('ai-chat-float-btn');
+                var suggestionBtns = document.querySelectorAll('.ai-suggestion-btn');
+                
+                // Debug logging
+                console.log('AI Chat Setup: inputEl found:', !!inputEl, 'sendBtn found:', !!sendBtn);
+                
+                // Send on button click
+                if (sendBtn) {
+                    // Remove any existing listeners by cloning the button
+                    if (sendBtn._wired) {
+                        var newSendBtn = sendBtn.cloneNode(true);
+                        sendBtn.parentNode.replaceChild(newSendBtn, sendBtn);
+                        sendBtn = newSendBtn;
+                    }
+                    sendBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (inputEl && inputEl.value.trim()) {
+                            console.log('AI Chat: Sending message:', inputEl.value.trim());
+                            sendChatMessage(inputEl.value.trim());
+                            inputEl.value = '';
+                        } else {
+                            console.warn('AI Chat: Cannot send - inputEl:', !!inputEl, 'value:', inputEl ? inputEl.value : 'N/A');
+                        }
+                    });
+                    sendBtn._wired = true;
+                } else {
+                    console.warn('AI Chat: Send button not found');
+                }
+                
+                // Send on Enter key
+                if (inputEl) {
+                    // Remove any existing listeners by cloning the input
+                    if (inputEl._wired) {
+                        var newInputEl = inputEl.cloneNode(true);
+                        inputEl.parentNode.replaceChild(newInputEl, inputEl);
+                        inputEl = newInputEl;
+                    }
+                    inputEl.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            if (this.value.trim()) {
+                                console.log('AI Chat: Sending message via Enter:', this.value.trim());
+                                sendChatMessage(this.value.trim());
+                                this.value = '';
+                            }
+                        }
+                    });
+                    inputEl._wired = true;
+                } else {
+                    console.warn('AI Chat: Input element not found');
+                }
+                
+                // Clear chat history
+                if (clearBtn) {
+                    clearBtn.addEventListener('click', function() {
+                        if (confirm('Clear all chat history?')) {
+                            clearChatHistory();
+                        }
+                    });
+                }
+                
+                // Settings button for API key
+                var settingsBtn = document.getElementById('ai-chat-settings');
+                if (settingsBtn && !settingsBtn._wired) {
+                    settingsBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        try {
+                            var currentKey = getGeminiAPIKey();
+                            var maskedKey = currentKey ? (currentKey.substring(0, 7) + '...' + currentKey.substring(currentKey.length - 4)) : 'Not set';
+                            var newKey = prompt('Gemini API Key Configuration\n\nCurrent key: ' + maskedKey + '\n\nEnter your Gemini API key (or leave empty to use default):', currentKey);
+                            if (newKey !== null) {
+                                setGeminiAPIKey(newKey.trim());
+                                if (newKey.trim() === '') {
+                                    alert('Using default API key.');
+                                } else {
+                                    alert('API key saved successfully!');
+                                }
+                            }
+                        } catch (err) {
+                            console.error('Error in settings button:', err);
+                            alert('Error: ' + err.message);
+                        }
+                    });
+                    settingsBtn._wired = true;
+                }
+                
+                // Floating button
+                if (floatBtn) {
+                    floatBtn.addEventListener('click', showAIChatOffcanvas);
+                }
+                
+                // Suggestion buttons - send message directly
+                suggestionBtns.forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        var suggestion = this.getAttribute('data-suggestion');
+                        if (suggestion) {
+                            if (typeof sendChatMessage === 'function') {
+                                sendChatMessage(suggestion);
+                            } else if (inputEl) {
+                                inputEl.value = suggestion;
+                                inputEl.focus();
+                            }
+                        }
+                    });
+                });
+                
+                console.log('AI Chat Assistant initialized');
+            } catch (e) {
+                console.error('Error setting up AI chat assistant:', e);
+            }
+        }
+        
+        /**
+         * Gets current data summary for insights generation
+         * @returns {Object} Summary of current selection
+         */
+        function getCurrentDataSummary() {
+            try {
+                var summary = {
+                    selectedBarangays: getSelectedBarangays() || [],
+                    floodExtent: '',
+                    floodExtentMeter: null,
+                    demographics: null,
+                    minimumNeeds: null,
+                    keyMetrics: {}
+                };
+                
+                var floodExtentDropdown = document.getElementById('floodExtentDropdown');
+                if (floodExtentDropdown && floodExtentDropdown.value) {
+                    summary.floodExtent = floodExtentDropdown.value;
+                    summary.floodExtentMeter = parseInt(String(floodExtentDropdown.value).replace(/[^0-9]/g, ''), 10);
+                }
+                
+                if (summary.floodExtentMeter && summary.selectedBarangays.length > 0) {
+                    var aggregationData = getAggregationDataForMeter(summary.floodExtentMeter);
+                    if (aggregationData) {
+                        summary.demographics = filterAndAggregateByBarangays(aggregationData, summary.selectedBarangays);
+                        summary.minimumNeeds = filterAndAggregateMinimumNeeds(aggregationData, summary.selectedBarangays);
+                        
+                        // Extract key metrics
+                        if (summary.demographics) {
+                            summary.keyMetrics = {
+                                populationAffected: summary.demographics.population_affected || 0,
+                                displaced: summary.demographics.displaced || 0,
+                                displacementRate: summary.demographics.population_affected > 0 
+                                    ? ((summary.demographics.displaced / summary.demographics.population_affected) * 100).toFixed(1) 
+                                    : 0,
+                                male: summary.demographics.male || 0,
+                                female: summary.demographics.female || 0,
+                                infant: summary.demographics.infant || 0,
+                                child: summary.demographics.child || 0,
+                                adult: summary.demographics.adult || 0,
+                                elderly: summary.demographics.elderly || 0
+                            };
+                        }
+                    }
+                }
+                
+                return summary;
+            } catch (e) {
+                console.error('Error getting current data summary:', e);
+                return {
+                    selectedBarangays: [],
+                    floodExtent: '',
+                    floodExtentMeter: null,
+                    demographics: null,
+                    minimumNeeds: null,
+                    keyMetrics: {}
+                };
+            }
+        }
+        
+        /**
+         * Generates AI insights from current data
+         */
+        function generateAIInsights() {
+            try {
+                var apiKey = getGeminiAPIKey();
+                if (!apiKey || apiKey === '') {
+                    // Don't show error, just don't generate insights
+                    return;
+                }
+                
+                var summary = getCurrentDataSummary();
+                
+                // Don't generate insights if no data
+                if (!summary.floodExtentMeter || summary.selectedBarangays.length === 0) {
+                    updateInsightsPanel([]);
+                    return;
+                }
+                
+                // Show loading
+                var loadingEl = document.getElementById('ai-insights-loading');
+                var listEl = document.getElementById('ai-insights-list');
+                var emptyEl = document.getElementById('ai-insights-empty');
+                if (loadingEl) loadingEl.style.display = 'flex';
+                if (listEl) listEl.style.display = 'none';
+                if (emptyEl) emptyEl.style.display = 'none';
+                
+                // Build prompt for insights
+                var prompt = 'Analyze the following flood impact data and provide 3-5 key insights in JSON format. ' +
+                    'Each insight should have a "category" (Priority Alert, Key Finding, Recommendation, or Data Anomaly) and "text" (the insight message). ' +
+                    'Focus on critical issues, notable patterns, and actionable recommendations. ' +
+                    'Return ONLY a valid JSON array, no other text. ' +
+                    'Data: ' + JSON.stringify(summary, null, 2);
+                
+                // Build Gemini request
+                var contents = [{
+                    role: 'user',
+                    parts: [{
+                        text: 'You are an expert in disaster management and flood impact assessment. ' +
+                              'Provide insights in JSON format: [{"category": "Priority Alert|Key Finding|Recommendation|Data Anomaly", "text": "insight text"}]. ' +
+                              'Return ONLY the JSON array, no other text.\n\n' + prompt
+                    }]
+                }];
+                
+                // Make API call to Gemini
+                var apiUrl = AIConfig.apiEndpoint + '?key=' + encodeURIComponent(apiKey);
+                fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: contents,
+                        generationConfig: {
+                            maxOutputTokens: 800,
+                            temperature: 0.7
+                        }
+                    })
+                })
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('API request failed');
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts) {
+                        var content = data.candidates[0].content.parts[0].text;
+                        // Try to parse JSON from response
+                        var jsonMatch = content.match(/\[[\s\S]*\]/);
+                        if (jsonMatch) {
+                            try {
+                                var insights = JSON.parse(jsonMatch[0]);
+                                updateInsightsPanel(insights);
+                            } catch (e) {
+                                // Fallback: create single insight from text
+                                updateInsightsPanel([{ category: 'Key Finding', text: content }]);
+                            }
+                        } else {
+                            // Fallback: create single insight from text
+                            updateInsightsPanel([{ category: 'Key Finding', text: content }]);
+                        }
+                    } else {
+                        updateInsightsPanel([]);
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error generating AI insights:', error);
+                    updateInsightsPanel([]);
+                })
+                .finally(function() {
+                    if (loadingEl) loadingEl.style.display = 'none';
+                });
+            } catch (e) {
+                console.error('Error generating AI insights:', e);
+                var loadingEl = document.getElementById('ai-insights-loading');
+                if (loadingEl) loadingEl.style.display = 'none';
+            }
+        }
+        
+        /**
+         * Updates the insights panel UI with new insights
+         * @param {Array} insights - Array of insight objects with category and text
+         */
+        function updateInsightsPanel(insights) {
+            try {
+                var listEl = document.getElementById('ai-insights-list');
+                var emptyEl = document.getElementById('ai-insights-empty');
+                var loadingEl = document.getElementById('ai-insights-loading');
+                
+                if (loadingEl) loadingEl.style.display = 'none';
+                
+                if (!insights || insights.length === 0) {
+                    if (listEl) listEl.style.display = 'none';
+                    if (emptyEl) emptyEl.style.display = 'block';
+                    return;
+                }
+                
+                if (emptyEl) emptyEl.style.display = 'none';
+                if (listEl) {
+                    listEl.innerHTML = '';
+                    listEl.style.display = 'flex';
+                    
+                    insights.forEach(function(insight) {
+                        var item = document.createElement('div');
+                        item.className = 'ai-insight-item';
+                        
+                        var category = document.createElement('div');
+                        category.className = 'ai-insight-category';
+                        var icon = '';
+                        if (insight.category === 'Priority Alert') {
+                            icon = '⚠️';
+                        } else if (insight.category === 'Key Finding') {
+                            icon = '💡';
+                        } else if (insight.category === 'Recommendation') {
+                            icon = '📋';
+                        } else if (insight.category === 'Data Anomaly') {
+                            icon = '🔍';
+                        }
+                        category.innerHTML = icon + ' ' + insight.category;
+                        
+                        var text = document.createElement('p');
+                        text.className = 'ai-insight-text';
+                        text.textContent = insight.text;
+                        
+                        item.appendChild(category);
+                        item.appendChild(text);
+                        listEl.appendChild(item);
+                    });
+                }
+            } catch (e) {
+                console.error('Error updating insights panel:', e);
+            }
+        }
+        
+        /**
+         * Shows the insights panel
+         */
+        function showInsightsPanel() {
+            var panel = document.getElementById('ai-insights-panel');
+            if (panel) {
+                panel.style.display = 'flex';
+                panel.classList.remove('collapsed');
+            }
+        }
+        
+        /**
+         * Hides/collapses the insights panel
+         */
+        function hideInsightsPanel() {
+            var panel = document.getElementById('ai-insights-panel');
+            if (panel) {
+                panel.classList.add('collapsed');
+            }
+        }
+        
+        /**
+         * Sets up auto-refresh for insights when data changes
+         */
+        function setupInsightsAutoRefresh() {
+            // Insights will be generated when data changes via integration points
+            // This function can be extended for additional auto-refresh logic
+        }
+        
+        // ==================== END AI INTEGRATION ====================
         
         /**
          * Updates charts (pie chart and bar chart) with filtered data.
@@ -10312,6 +11863,13 @@
                             var aggregatedDemographics = filterAndAggregateByBarangays(aggregationData, selectedBarangays);
                             console.log('Filtered demographics by barangays:', aggregatedDemographics);
                             updateDemographicsCharts(aggregatedDemographics);
+                            
+                            // Generate AI insights when impact report is viewed
+                            if (typeof generateAIInsights === 'function') {
+                                setTimeout(function() {
+                                    generateAIInsights();
+                                }, 1000);
+                            }
                         } else {
                             console.error('No aggregation data found for meter:', meter);
                             alert('Aggregation data not available for ' + meter + ' meters.');
@@ -10333,9 +11891,16 @@
                             if (aggregationData) {
                                 var aggregatedDemographics = filterAndAggregateByBarangays(aggregationData, selectedBarangays);
                                 updateDemographicsCharts(aggregatedDemographics);
+                                
+                                // Generate AI insights
+                                if (typeof generateAIInsights === 'function') {
+                                    setTimeout(function() {
+                                        generateAIInsights();
+                                    }, 500);
+                                }
                             }
                         }, 500);
-                        }
+                    }
                 }, 800); // Increased delay to ensure offcanvas is fully rendered
             } catch (e) {
                 console.error('Error showing impact report in offcanvas:', e);
@@ -10943,11 +12508,91 @@
                             return;
                         }
                         showMinimumNeedsOffcanvas(meterVal);
+                        // Generate insights when minimum needs is viewed
+                        if (typeof generateAIInsights === 'function') {
+                            setTimeout(function() {
+                                generateAIInsights();
+                            }, 500);
+                        }
                     } catch (e) {
                         console.error('Error showing minimum needs offcanvas:', e);
                     }
                 });
                 minimumNeedsBtn._wired = true;
+            }
+            
+            // Wire AI Assistant button
+            var aiAssistantBtn = document.getElementById('aiAssistantBtn');
+            if (aiAssistantBtn && !aiAssistantBtn._wired) {
+                aiAssistantBtn.addEventListener('click', function() {
+                    try {
+                        showAIChatOffcanvas();
+                    } catch (e) {
+                        console.error('Error showing AI chat offcanvas:', e);
+                    }
+                });
+                aiAssistantBtn._wired = true;
+            }
+            
+            // Setup AI Chat Assistant
+            if (typeof setupAIChatAssistant === 'function') {
+                setupAIChatAssistant();
+            }
+            
+            // Setup AI Insights Panel controls
+            var insightsToggle = document.getElementById('ai-insights-toggle');
+            var insightsClose = document.getElementById('ai-insights-close');
+            var insightsRefresh = document.getElementById('ai-insights-refresh');
+            
+            if (insightsToggle) {
+                insightsToggle.addEventListener('click', function() {
+                    var panel = document.getElementById('ai-insights-panel');
+                    if (panel) {
+                        if (panel.classList.contains('collapsed')) {
+                            panel.classList.remove('collapsed');
+                            this.querySelector('i').classList.remove('fa-chevron-down');
+                            this.querySelector('i').classList.add('fa-chevron-up');
+                        } else {
+                            panel.classList.add('collapsed');
+                            this.querySelector('i').classList.remove('fa-chevron-up');
+                            this.querySelector('i').classList.add('fa-chevron-down');
+                        }
+                    }
+                });
+            }
+            
+            if (insightsClose) {
+                insightsClose.addEventListener('click', function() {
+                    var panel = document.getElementById('ai-insights-panel');
+                    if (panel) {
+                        panel.style.display = 'none';
+                    }
+                });
+            }
+            
+            if (insightsRefresh) {
+                insightsRefresh.addEventListener('click', function() {
+                    if (typeof generateAIInsights === 'function') {
+                        generateAIInsights();
+                    }
+                });
+            }
+            
+            // Set up Bootstrap offcanvas event listeners for AI chat offcanvas to sync width
+            var offcanvasAIChatEl = document.getElementById('offcanvasAIChat');
+            if (offcanvasAIChatEl && typeof bootstrap !== 'undefined') {
+                var offcanvasAIChat = bootstrap.Offcanvas.getInstance(offcanvasAIChatEl) || new bootstrap.Offcanvas(offcanvasAIChatEl);
+                offcanvasAIChatEl.addEventListener('shown.bs.offcanvas', function() {
+                    syncAIChatOffcanvasWidth();
+                });
+                offcanvasAIChatEl.addEventListener('hidden.bs.offcanvas', function() {
+                    syncAIChatOffcanvasWidth();
+                });
+            }
+            
+            // Show insights panel on load
+            if (typeof showInsightsPanel === 'function') {
+                showInsightsPanel();
             }
             
             // Set up Bootstrap offcanvas event listeners for impact report offcanvas to sync width
@@ -10986,6 +12631,11 @@
                 var docsBtn = document.getElementById('ai-chat-docs');
                 var keyHint = document.getElementById('ai-key-hint');
                 var isSending = false;
+                
+                // Debug: Check if elements are found
+                if (!input) console.warn('AI Chat: input element not found');
+                if (!send) console.warn('AI Chat: send button not found');
+                if (!body) console.warn('AI Chat: body element not found');
 
                 function getApiKey(){
                     try { return localStorage.getItem('openai_api_key') || ''; } catch(e){ return ''; }
@@ -11124,6 +12774,11 @@
                     docsBtn._wired = true;
                 }
                 function doSend(){
+                    // Re-fetch elements in case they weren't available initially
+                    if (!input) input = document.getElementById('ai-chat-input');
+                    if (!send) send = document.getElementById('ai-chat-send');
+                    if (!body) body = document.getElementById('ai-chat-body');
+                    
                     var q = (input && input.value || '').trim();
                     if (!q) return;
                     if (isSending) { return; }
@@ -11136,8 +12791,41 @@
                         if (send) { send.disabled = false; }
                     });
                 }
-                if (send && !send._wired){ send.addEventListener('click', doSend); send._wired = true; }
-                if (input && !input._wired){ input.addEventListener('keydown', function(e){ if(e.key==='Enter'){ doSend(); } }); input._wired = true; }
+                
+                // Attach event listeners with retry logic
+                function attachEventListeners() {
+                    // Re-fetch elements
+                    if (!input) input = document.getElementById('ai-chat-input');
+                    if (!send) send = document.getElementById('ai-chat-send');
+                    
+                    if (send && !send._wired) {
+                        send.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            doSend();
+                        });
+                        send._wired = true;
+                        console.log('AI Chat: Send button event listener attached');
+                    }
+                    
+                    if (input && !input._wired) {
+                        input.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                doSend();
+                            }
+                        });
+                        input._wired = true;
+                        console.log('AI Chat: Input event listener attached');
+                    }
+                }
+                
+                // Try to attach immediately
+                attachEventListeners();
+                
+                // Also try after a short delay in case elements load late
+                setTimeout(attachEventListeners, 100);
+                setTimeout(attachEventListeners, 500);
             })();
 
             // ESC to close whichever modal is open
@@ -11403,6 +13091,95 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bootstrap Offcanvas Bottom for AI Chat Assistant -->
+        <div class="offcanvas offcanvas-bottom" tabindex="-1" id="offcanvasAIChat" aria-labelledby="offcanvasAIChatLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="offcanvasAIChatLabel">AI Assistant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <!-- Chat Messages Container -->
+                <div id="ai-chat-messages" class="ai-chat-messages-container">
+                    <div class="ai-chat-welcome">
+                        <p>👋 Hello! I'm your AI assistant for flood impact assessment.</p>
+                        <p>Ask me questions about:</p>
+                        <ul>
+                            <li>Affected population and demographics</li>
+                            <li>Displacement data</li>
+                            <li>Minimum needs requirements</li>
+                            <li>Comparisons between barangays</li>
+                            <li>Key insights from the data</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Chat Input Area -->
+                <div class="ai-chat-input-container">
+                    <div class="ai-chat-suggestions" id="ai-chat-suggestions">
+                        <button class="ai-suggestion-btn" data-suggestion="What is the total affected population?">What is the total affected population?</button>
+                        <button class="ai-suggestion-btn" data-suggestion="Which barangay has the highest displacement rate?">Which barangay has the highest displacement rate?</button>
+                        <button class="ai-suggestion-btn" data-suggestion="What are the key minimum needs?">What are the key minimum needs?</button>
+                    </div>
+                    <div class="ai-chat-input-wrapper">
+                        <input type="text" id="ai-chat-input-offcanvas" class="ai-chat-input" placeholder="Ask a question about the flood impact data..." />
+                        <button id="ai-chat-send-btn" class="ai-chat-send-btn" title="Send message">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <div class="ai-chat-actions">
+                        <button id="ai-chat-settings" class="ai-chat-action-btn" title="API Settings">
+                            <i class="fas fa-cog"></i> Settings
+                        </button>
+                        <button id="ai-chat-clear" class="ai-chat-action-btn" title="Clear chat history">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                        <div id="ai-chat-loading" class="ai-chat-loading" style="display: none;">
+                            <span class="ai-typing-indicator"></span>
+                            <span>AI is thinking...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Floating AI Chat Button -->
+        <button id="ai-chat-float-btn" title="Open AI Assistant">
+            <i class="fas fa-robot"></i>
+        </button>
+        
+        <!-- AI Insights Floating Panel -->
+        <div id="ai-insights-panel" class="ai-insights-panel">
+            <div class="ai-insights-header">
+                <div class="ai-insights-title">
+                    <i class="fas fa-lightbulb"></i>
+                    <span>AI Insights</span>
+                </div>
+                <div class="ai-insights-controls">
+                    <button id="ai-insights-refresh" class="ai-insights-btn" title="Refresh insights">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button id="ai-insights-toggle" class="ai-insights-btn" title="Collapse/Expand">
+                        <i class="fas fa-chevron-up"></i>
+                    </button>
+                    <button id="ai-insights-close" class="ai-insights-btn" title="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="ai-insights-content" class="ai-insights-content">
+                <div class="ai-insights-loading" id="ai-insights-loading">
+                    <div class="ai-insights-spinner"></div>
+                    <p>Generating insights...</p>
+                </div>
+                <div id="ai-insights-list" class="ai-insights-list" style="display: none;">
+                    <!-- Insights will be dynamically inserted here -->
+                </div>
+                <div id="ai-insights-empty" class="ai-insights-empty" style="display: none;">
+                    <p>No insights available. Select a flood extent and barangay to generate insights.</p>
                 </div>
             </div>
         </div>
