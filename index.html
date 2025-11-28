@@ -1018,26 +1018,7 @@
         }
         
         .ai-chat-suggestions {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            margin-bottom: 0.75rem;
-        }
-        
-        .ai-suggestion-btn {
-            background: #2a2f39;
-            border: 1px solid #3a3f4a;
-            color: #fafafa;
-            padding: 0.4rem 0.8rem;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .ai-suggestion-btn:hover {
-            background: #3a3f4a;
-            border-color: #f39c12;
+            display: none; /* Hide suggestion buttons */
         }
         
         .ai-chat-input-wrapper {
@@ -1937,6 +1918,46 @@
             transform: none;
         }
         
+        .ai-chat-voice-button {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            border: none;
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+        
+        .ai-chat-voice-button:hover:not(:disabled) {
+            background: linear-gradient(135deg, #2980b9 0%, #1f618d 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
+        }
+        
+        .ai-chat-voice-button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        
+        .ai-chat-voice-button.listening {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        .ai-chat-voice-button.wake-word-active {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
         .ai-chat-footer-actions {
             display: flex;
             justify-content: space-between;
@@ -2735,7 +2756,7 @@
                             <div class="ai-chat-header-content">
                                 <div class="ai-chat-icon">🤖</div>
                                 <div class="ai-chat-title-wrapper">
-                                    <div class="ai-chat-title">Chat with TOMAS</div>
+                            <div class="ai-chat-title">Chat with TOMAS</div>
                                     <div class="ai-chat-subtitle">AI Assistant for Flood Impact Assessment</div>
                                 </div>
                             </div>
@@ -2764,19 +2785,11 @@
                             <span>No API key set. Click ⚙ to configure your API settings.</span>
                         </div>
                         <div class="ai-chat-input-container">
-                            <div class="ai-chat-suggestions" id="ai-chat-suggestions">
-                                <button class="ai-suggestion-btn" data-suggestion="What is the total affected population?">
-                                    <span>What is the total affected population?</span>
-                                </button>
-                                <button class="ai-suggestion-btn" data-suggestion="Which barangay has the highest displacement rate?">
-                                    <span>Which barangay has the highest displacement rate?</span>
-                                </button>
-                                <button class="ai-suggestion-btn" data-suggestion="What are the key minimum needs?">
-                                    <span>What are the key minimum needs?</span>
-                                </button>
-                            </div>
                             <div class="ai-chat-input-wrapper">
-                                <input id="ai-chat-input" type="text" class="ai-chat-input-field" placeholder="Ask a question about the flood impact data..." autocomplete="off" />
+                                <button id="ai-chat-voice-btn" class="ai-chat-voice-button" title="Voice input (Say 'Hey Tomas' to activate)">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <input id="ai-chat-input" type="text" class="ai-chat-input-field" placeholder="Ask a question or say 'Hey Tomas' for voice..." autocomplete="off" />
                                 <button id="ai-chat-send" class="ai-chat-send-button" title="Send message">
                                     <i class="fas fa-paper-plane"></i>
                                 </button>
@@ -9289,17 +9302,26 @@
         // ==================== AI INTEGRATION ====================
         
         /**
-         * Google Gemini API Configuration
+         * Gemini API Configuration
          * API key is stored in localStorage for security
+         * Gemini API uses Google's Generative AI API format
          */
         var AIConfig = {
-            apiKey: 'AIzaSyA2nIMIDptgsKohxm8v6W6JCtRrpwKuRx4', // Default API key
-            apiEndpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
-            model: 'gemini-2.5-flash',
+            apiKey: 'AIzaSyDBJW6zj3Z5puCEO7yY3vjeuLZcEZo4GFo', // Default API key
+            apiEndpoint: 'https://generativelanguage.googleapis.com/v1beta/models', // Gemini API base endpoint
+            model: 'gemini-2.5-flash', // Gemini model name (using 2.5-flash as per official docs)
             maxTokens: 1000,
             temperature: 0.7,
             cacheEnabled: true,
             cacheExpiry: 300000 // 5 minutes in milliseconds
+        };
+        
+        // ElevenLabs TTS Configuration
+        var ElevenLabsConfig = {
+            apiKey: 'sk_c9e0fb7e83fef0407c1adac637c8796d5713be929dc06d06', // Default API key
+            apiEndpoint: 'https://api.elevenlabs.io/v1/text-to-speech',
+            voiceId: '21m00Tcm4TlvDq8ikWAM', // Default voice (Rachel - clear and natural)
+            modelId: 'eleven_multilingual_v2' // Multilingual model
         };
         
         // Chat message cache
@@ -9338,6 +9360,490 @@
         }
         
         /**
+         * Converts OpenAI-format messages to Gemini format
+         * @param {Array} messages - Array of messages in OpenAI format
+         * @returns {Object} Object with contents array and systemInstruction string
+         */
+        function convertMessagesToGeminiFormat(messages) {
+            var contents = [];
+            var systemInstruction = null;
+            var currentParts = [];
+            var currentRole = null;
+            
+            messages.forEach(function(msg) {
+                // Extract system instruction separately (Gemini uses systemInstruction field)
+                if (msg.role === 'system') {
+                    systemInstruction = msg.content;
+                    return; // Skip adding to contents
+                }
+                
+                // Gemini uses 'user' and 'model' roles (not 'assistant')
+                var geminiRole = msg.role === 'assistant' ? 'model' : 'user';
+                
+                if (geminiRole !== currentRole && currentParts.length > 0) {
+                    contents.push({
+                        role: currentRole,
+                        parts: currentParts
+                    });
+                    currentParts = [];
+                }
+                
+                currentRole = geminiRole;
+                currentParts.push({ text: msg.content });
+            });
+            
+            if (currentParts.length > 0) {
+                contents.push({
+                    role: currentRole,
+                    parts: currentParts
+                });
+            }
+            
+            return {
+                contents: contents,
+                systemInstruction: systemInstruction
+            };
+        }
+        
+        /**
+         * Converts Gemini response to OpenAI-format response
+         * @param {Object} geminiResponse - Gemini API response
+         * @returns {Object} OpenAI-format response
+         */
+        function convertGeminiResponseToOpenAIFormat(geminiResponse) {
+            var text = '';
+            if (geminiResponse.candidates && geminiResponse.candidates.length > 0) {
+                var candidate = geminiResponse.candidates[0];
+                if (candidate.content && candidate.content.parts) {
+                    text = candidate.content.parts.map(function(part) {
+                        return part.text || '';
+                    }).join('');
+                }
+            }
+            
+            return {
+                choices: [{
+                    message: {
+                        role: 'assistant',
+                        content: text
+                    }
+                }]
+            };
+        }
+        
+        /**
+         * Voice Recognition and Text-to-Speech functionality
+         */
+        var voiceRecognition = {
+            recognition: null,
+            isListening: false,
+            wakeWordActive: false,
+            wakeWords: ['hey tomas', 'hello tomas', 'tomas'],
+            currentTranscript: '',
+            speechSynthesis: window.speechSynthesis || window.webkitSpeechSynthesis,
+            currentUtterance: null,
+            
+            /**
+             * Initialize voice recognition
+             */
+            init: function() {
+                try {
+                    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    if (!SpeechRecognition) {
+                        console.warn('Speech recognition not supported in this browser');
+                        return false;
+                    }
+                    
+                    this.recognition = new SpeechRecognition();
+                    this.recognition.continuous = true;
+                    this.recognition.interimResults = true;
+                    this.recognition.lang = 'en-US';
+                    
+                    var self = this;
+                    this.recognition.onstart = function() {
+                        self.isListening = true;
+                        self.updateVoiceButtonState();
+                    };
+                    
+                    this.recognition.onresult = function(event) {
+                        var finalTranscript = '';
+                        var interimTranscript = '';
+                        
+                        for (var i = event.resultIndex; i < event.results.length; i++) {
+                            var transcript = event.results[i][0].transcript;
+                            if (event.results[i].isFinal) {
+                                finalTranscript += transcript + ' ';
+                            } else {
+                                interimTranscript += transcript;
+                            }
+                        }
+                        
+                        // Only process final results for wake word detection
+                        if (finalTranscript.trim()) {
+                            var fullTranscript = finalTranscript.trim();
+                            self.currentTranscript = fullTranscript.toLowerCase();
+                            console.log('Final transcript:', fullTranscript);
+                            self.handleSpeechResult(fullTranscript);
+                        }
+                    };
+                    
+                    this.recognition.onerror = function(event) {
+                        console.error('Speech recognition error:', event.error);
+                        if (event.error === 'no-speech') {
+                            // Restart listening if no speech detected
+                            if (self.wakeWordActive) {
+                                setTimeout(function() {
+                                    if (self.wakeWordActive) {
+                                        self.startListening();
+                                    }
+                                }, 500);
+                            }
+                        } else if (event.error === 'network') {
+                            self.stopListening();
+                            alert('Network error: Please check your internet connection.');
+                        }
+                    };
+                    
+                    this.recognition.onend = function() {
+                        self.isListening = false;
+                        self.updateVoiceButtonState();
+                        // Restart if wake word was active
+                        if (self.wakeWordActive) {
+                            setTimeout(function() {
+                                if (self.wakeWordActive) {
+                                    self.startListening();
+                                }
+                            }, 100);
+                        }
+                    };
+                    
+                    return true;
+                } catch (e) {
+                    console.error('Error initializing voice recognition:', e);
+                    return false;
+                }
+            },
+            
+            /**
+             * Handle speech recognition results
+             */
+            handleSpeechResult: function(transcript) {
+                if (!transcript || !transcript.trim()) return;
+                
+                var lowerTranscript = transcript.toLowerCase().trim();
+                console.log('Processing transcript:', lowerTranscript);
+                
+                // Check for wake words
+                if (!this.wakeWordActive) {
+                    for (var i = 0; i < this.wakeWords.length; i++) {
+                        var wakeWord = this.wakeWords[i];
+                        // Check if wake word appears in the transcript (at start or anywhere)
+                        if (lowerTranscript.indexOf(wakeWord) >= 0) {
+                            console.log('Wake word detected:', wakeWord);
+                            this.activateWakeWord();
+                            // Extract command after wake word
+                            var wakeWordIndex = lowerTranscript.indexOf(wakeWord);
+                            var command = transcript.substring(wakeWordIndex + wakeWord.length).trim();
+                            if (command) {
+                                console.log('Command after wake word:', command);
+                                this.processCommand(command);
+                            }
+                            return;
+                        }
+                    }
+                } else {
+                    // Wake word is active, process as command
+                    console.log('Processing command (wake word active):', transcript);
+                    this.processCommand(transcript);
+                }
+            },
+            
+            /**
+             * Activate wake word mode
+             */
+            activateWakeWord: function() {
+                this.wakeWordActive = true;
+                this.updateVoiceButtonState();
+                this.speak('Yes, I\'m listening. How can I help you?');
+            },
+            
+            /**
+             * Process voice command
+             */
+            processCommand: function(command) {
+                if (!command || command.trim() === '') return;
+                
+                // Update input field
+                var inputEl = document.getElementById('ai-chat-input') || document.getElementById('ai-chat-input-offcanvas');
+                if (inputEl) {
+                    inputEl.value = command.trim();
+                }
+                
+                // Send message after a short delay
+                var self = this;
+                setTimeout(function() {
+                    sendChatMessage(command.trim());
+                    // Deactivate wake word after sending
+                    self.deactivateWakeWord();
+                }, 300);
+            },
+            
+            /**
+             * Deactivate wake word mode
+             */
+            deactivateWakeWord: function() {
+                this.wakeWordActive = false;
+                this.updateVoiceButtonState();
+                this.stopListening();
+            },
+            
+            /**
+             * Start listening for voice input
+             */
+            startListening: function() {
+                if (!this.recognition) {
+                    if (!this.init()) {
+                        alert('Voice recognition is not supported in your browser.');
+                        return;
+                    }
+                }
+                
+                try {
+                    if (!this.isListening) {
+                        this.recognition.start();
+                    }
+                } catch (e) {
+                    console.error('Error starting recognition:', e);
+                    // Try to restart if already running
+                    if (e.name === 'InvalidStateError') {
+                        this.recognition.stop();
+                        setTimeout(function() {
+                            voiceRecognition.recognition.start();
+                        }, 100);
+                    }
+                }
+            },
+            
+            /**
+             * Stop listening for voice input
+             */
+            stopListening: function() {
+                if (this.recognition && this.isListening) {
+                    try {
+                        this.recognition.stop();
+                    } catch (e) {
+                        console.error('Error stopping recognition:', e);
+                    }
+                }
+                this.wakeWordActive = false;
+                this.isListening = false;
+                this.updateVoiceButtonState();
+            },
+            
+            /**
+             * Toggle voice listening
+             */
+            toggleListening: function() {
+                if (this.isListening) {
+                    this.stopListening();
+                } else {
+                    this.startListening();
+                }
+            },
+            
+            /**
+             * Update voice button visual state
+             */
+            updateVoiceButtonState: function() {
+                var voiceBtn = document.getElementById('ai-chat-voice-btn') || document.getElementById('ai-chat-voice-btn-offcanvas');
+                if (!voiceBtn) return;
+                
+                voiceBtn.classList.remove('listening', 'wake-word-active');
+                
+                if (this.wakeWordActive) {
+                    voiceBtn.classList.add('wake-word-active');
+                    voiceBtn.title = 'Wake word active - Listening for commands';
+                } else if (this.isListening) {
+                    voiceBtn.classList.add('listening');
+                    voiceBtn.title = 'Listening... (Say "Hey Tomas" to activate)';
+                } else {
+                    voiceBtn.title = 'Voice input (Say "Hey Tomas" to activate)';
+                }
+            },
+            
+            /**
+             * Speak text using ElevenLabs TTS (or fallback to browser TTS)
+             */
+            speak: function(text) {
+                if (!text || !text.trim()) return;
+                
+                // Get ElevenLabs API key
+                var elevenLabsKey = getElevenLabsAPIKey();
+                
+                // Use ElevenLabs if API key is available
+                if (elevenLabsKey && elevenLabsKey.trim() !== '') {
+                    this.speakWithElevenLabs(text, elevenLabsKey);
+                } else {
+                    // Fallback to browser TTS
+                    this.speakWithBrowserTTS(text);
+                }
+            },
+            
+            /**
+             * Speak using ElevenLabs API
+             */
+            speakWithElevenLabs: function(text, apiKey) {
+                var self = this;
+                var url = ElevenLabsConfig.apiEndpoint + '/' + ElevenLabsConfig.voiceId;
+                
+                // Clean text (remove markdown, special characters for better TTS)
+                var cleanText = text
+                    .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold markdown
+                    .replace(/\*(.*?)\*/g, '$1') // Remove italic markdown
+                    .replace(/```[\s\S]*?```/g, '') // Remove code blocks
+                    .replace(/`([^`]+)`/g, '$1') // Remove inline code
+                    .replace(/[❌⚠️✅]/g, '') // Remove emojis
+                    .replace(/\n{3,}/g, '\n\n') // Limit multiple newlines
+                    .trim();
+                
+                if (!cleanText) return;
+                
+                var requestBody = {
+                    text: cleanText,
+                    model_id: ElevenLabsConfig.modelId,
+                    voice_settings: {
+                        stability: 0.5,
+                        similarity_boost: 0.75,
+                        style: 0.0,
+                        use_speaker_boost: true
+                    }
+                };
+                
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'audio/mpeg',
+                        'Content-Type': 'application/json',
+                        'xi-api-key': apiKey
+                    },
+                    body: JSON.stringify(requestBody)
+                })
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('ElevenLabs API error: ' + response.status);
+                    }
+                    return response.blob();
+                })
+                .then(function(audioBlob) {
+                    var audioUrl = URL.createObjectURL(audioBlob);
+                    var audio = new Audio(audioUrl);
+                    
+                    audio.onended = function() {
+                        URL.revokeObjectURL(audioUrl);
+                        self.currentUtterance = null;
+                    };
+                    
+                    audio.onerror = function(error) {
+                        console.error('Error playing ElevenLabs audio:', error);
+                        URL.revokeObjectURL(audioUrl);
+                        // Fallback to browser TTS
+                        self.speakWithBrowserTTS(text);
+                    };
+                    
+                    self.currentUtterance = audio;
+                    audio.play();
+                })
+                .catch(function(error) {
+                    console.error('Error calling ElevenLabs API:', error);
+                    // Fallback to browser TTS
+                    self.speakWithBrowserTTS(text);
+                });
+            },
+            
+            /**
+             * Speak using browser's built-in TTS (fallback)
+             */
+            speakWithBrowserTTS: function(text) {
+                if (!this.speechSynthesis) {
+                    console.warn('Text-to-speech not supported in this browser');
+                    return;
+                }
+                
+                // Stop any current speech
+                this.stopSpeaking();
+                
+                // Clean text for browser TTS
+                var cleanText = text
+                    .replace(/\*\*(.*?)\*\*/g, '$1')
+                    .replace(/\*(.*?)\*/g, '$1')
+                    .replace(/```[\s\S]*?```/g, '')
+                    .replace(/`([^`]+)`/g, '$1')
+                    .replace(/[❌⚠️✅]/g, '')
+                    .trim();
+                
+                if (!cleanText) return;
+                
+                var utterance = new SpeechSynthesisUtterance(cleanText);
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                utterance.lang = 'en-US';
+                
+                this.currentUtterance = utterance;
+                this.speechSynthesis.speak(utterance);
+            },
+            
+            /**
+             * Stop current speech
+             */
+            stopSpeaking: function() {
+                // Stop browser TTS
+                if (this.speechSynthesis && this.speechSynthesis.speaking) {
+                    this.speechSynthesis.cancel();
+                }
+                
+                // Stop ElevenLabs audio
+                if (this.currentUtterance && this.currentUtterance instanceof Audio) {
+                    this.currentUtterance.pause();
+                    this.currentUtterance.currentTime = 0;
+                }
+                
+                this.currentUtterance = null;
+            }
+        };
+        
+        /**
+         * Gets ElevenLabs API key from localStorage or uses default
+         * @returns {string} API key or empty string
+         */
+        function getElevenLabsAPIKey() {
+            try {
+                var storedKey = localStorage.getItem('elevenlabs_api_key');
+                if (storedKey && storedKey.trim() !== '') {
+                    return storedKey.trim();
+                }
+                // Return default key if no stored key
+                return ElevenLabsConfig.apiKey || '';
+            } catch (e) {
+                console.warn('Could not access localStorage:', e);
+                return ElevenLabsConfig.apiKey || '';
+            }
+        }
+        
+        /**
+         * Sets ElevenLabs API key in localStorage
+         * @param {string} key - The API key
+         */
+        function setElevenLabsAPIKey(key) {
+            try {
+                localStorage.setItem('elevenlabs_api_key', key || '');
+                ElevenLabsConfig.apiKey = key || ElevenLabsConfig.apiKey;
+            } catch (e) {
+                console.warn('Could not save API key to localStorage:', e);
+            }
+        }
+        
+        /**
          * Syncs the AI chat offcanvas width with the map container
          */
         function syncAIChatOffcanvasWidth() {
@@ -9368,9 +9874,6 @@
                     floodExtentMeter: null,
                     demographics: null,
                     minimumNeeds: null,
-                    allFloodExtents: {},
-                    db0Data: null,
-                    householdsData: null,
                     timestamp: new Date().toISOString()
                 };
                 
@@ -9381,7 +9884,7 @@
                     context.floodExtentMeter = parseInt(String(floodExtentDropdown.value).replace(/[^0-9]/g, ''), 10);
                 }
                 
-                // Get demographics data if available (filtered for current selection)
+                // Get demographics data if available (filtered for current selection only)
                 if (context.floodExtentMeter && context.selectedBarangays.length > 0) {
                     var aggregationData = getAggregationDataForMeter(context.floodExtentMeter);
                     if (aggregationData) {
@@ -9389,25 +9892,6 @@
                         context.minimumNeeds = filterAndAggregateMinimumNeeds(aggregationData, context.selectedBarangays);
                     }
                 }
-                
-                // Get all aggregation summary data for all flood extents (24-30 meters)
-                var allAggregationData = getAllAggregationSummaryData();
-                var allAnalysisData = getAllAnalysisSummaryData();
-                
-                // Organize data by flood extent
-                var meters = [24, 25, 26, 27, 28, 29, 30];
-                meters.forEach(function(meter) {
-                    context.allFloodExtents[meter] = {
-                        aggregationSummary: allAggregationData[meter] || null,
-                        analysisSummary: allAnalysisData[meter] || null
-                    };
-                });
-                
-                // Get DB_0 data
-                context.db0Data = getDB0Data();
-                
-                // Get StoTomasHouseholdsjoined data
-                context.householdsData = getStoTomasHouseholdsData();
                 
                 return context;
             } catch (e) {
@@ -9418,9 +9902,6 @@
                     floodExtentMeter: null,
                     demographics: null,
                     minimumNeeds: null,
-                    allFloodExtents: {},
-                    db0Data: null,
-                    householdsData: null,
                     timestamp: new Date().toISOString()
                 };
             }
@@ -9523,7 +10004,7 @@
         }
         
         /**
-         * Sends a chat message to OpenAI API
+         * Sends a chat message to Gemini API
          * @param {string} message - User message
          */
         function sendChatMessage(message) {
@@ -9566,71 +10047,59 @@
                     console.warn('Could not calculate context size:', e);
                 }
                 
-                // Build system instruction with comprehensive data explanation
+                // Build system instruction with simplified data explanation
                 var systemInstruction = 'You are an AI assistant for a flood impact assessment application called PROJECT TOMaS (Tactical Overlay for Mapping and Safety). ' +
                     'You help users understand flood impact data including affected population, demographics, displacement, and minimum needs. ' +
                     '\n\n' +
                     'DATA STRUCTURE:\n' +
-                    'The context includes comprehensive flood impact data organized as follows:\n' +
-                    '1. allFloodExtents: Contains complete aggregation summary and analysis summary data for all flood extents (24, 25, 26, 27, 28, 29, and 30 meters).\n' +
-                    '   - Each flood extent has two data types:\n' +
-                    '     * aggregationSummary: Detailed data by barangay/aggregation area with population demographics, displacement, and minimum needs.\n' +
-                    '     * analysisSummary: Overall analysis data for the flood extent including hazard counts, total affected population, and aggregated statistics.\n' +
-                    '2. db0Data: Database reference data (DB_0.js) containing additional geographic and administrative information.\n' +
-                    '3. householdsData: Household-level data (StoTomasHouseholdsjoined_layer_1.js) with detailed family and individual information.\n' +
-                    '4. demographics: Filtered demographic data for currently selected barangays and flood extent.\n' +
-                    '5. minimumNeeds: Filtered minimum needs data for currently selected barangays and flood extent.\n' +
-                    '6. selectedBarangays: Array of currently selected barangay names.\n' +
-                    '7. floodExtentMeter: Currently selected flood extent in meters (24-30).\n' +
+                    'The context includes data for the currently selected flood extent and barangays:\n' +
+                    '1. selectedBarangays: Array of currently selected barangay names.\n' +
+                    '2. floodExtentMeter: Currently selected flood extent in meters (24-30).\n' +
+                    '3. demographics: Filtered demographic data for currently selected barangays and flood extent.\n' +
+                    '4. minimumNeeds: Filtered minimum needs data for currently selected barangays and flood extent.\n' +
                     '\n' +
                     'When answering questions:\n' +
-                    '- Use the comprehensive data in allFloodExtents to answer questions about any flood extent, not just the currently selected one.\n' +
-                    '- Compare data across different flood extents when relevant.\n' +
-                    '- Reference specific barangays, aggregation areas, or flood extents in your answers.\n' +
-                    '- Use the analysis summary data for overall statistics and the aggregation summary for barangay-level details.\n' +
-                    '- If asked about specific data that exists in the context, provide accurate numbers and details.\n' +
+                    '- Answer based on the currently selected flood extent and barangays.\n' +
+                    '- Reference specific barangays and the flood extent in your answers.\n' +
+                    '- If asked about data not in the current selection, let the user know they need to select the relevant flood extent or barangays.\n' +
+                    '- If specific data is not available in the context, let the user know.\n' +
                     '\n' +
                     'Current context: ' + JSON.stringify(context, null, 2) + '\n\n' +
-                    'Provide clear, concise, and helpful answers about the flood impact data. ' +
-                    'If specific data is not available in the context, let the user know.';
+                    'Provide clear, concise, and helpful answers about the flood impact data.';
                 
-                // Build conversation history for Gemini
-                var contents = [];
+                // Build conversation history for Gemini format
+                var messages = [];
                 
                 // Add system instruction as first message
-                contents.push({
-                    role: 'user',
-                    parts: [{ text: systemInstruction }]
-                });
-                contents.push({
-                    role: 'model',
-                    parts: [{ text: 'I understand. I will help you analyze flood impact data for PROJECT TOMaS.' }]
+                messages.push({
+                    role: 'system',
+                    content: systemInstruction
                 });
                 
                 // Add chat history (last 10 messages for context)
                 var recentHistory = chatHistory.slice(-10);
                 recentHistory.forEach(function(msg) {
                     if (msg.role === 'user') {
-                        contents.push({
+                        messages.push({
                             role: 'user',
-                            parts: [{ text: msg.content }]
+                            content: msg.content
                         });
                     } else if (msg.role === 'assistant') {
-                        contents.push({
-                            role: 'model',
-                            parts: [{ text: msg.content }]
+                        messages.push({
+                            role: 'assistant',
+                            content: msg.content
                         });
                     }
                 });
                 
                 // Add current user message
-                contents.push({
+                messages.push({
                     role: 'user',
-                    parts: [{ text: message }]
+                    content: message
                 });
                 
                 // Check cache
-                var cacheKey = JSON.stringify(contents);
+                var cacheKey = JSON.stringify(messages);
                 if (AIConfig.cacheEnabled && chatMessageCache[cacheKey]) {
                     var cached = chatMessageCache[cacheKey];
                     if (Date.now() - cached.timestamp < AIConfig.cacheExpiry) {
@@ -9644,20 +10113,41 @@
                     }
                 }
                 
-                // Make API call to Gemini
-                var apiUrl = AIConfig.apiEndpoint + '?key=' + encodeURIComponent(apiKey);
+                // Convert messages to Gemini format
+                var geminiFormat = convertMessagesToGeminiFormat(messages);
+                
+                // Build Gemini API URL (API key goes in header, not query parameter)
+                var apiUrl = AIConfig.apiEndpoint + '/' + AIConfig.model + ':generateContent';
+                console.log('Making request to Gemini API:', apiUrl);
+                console.log('Request payload size:', JSON.stringify(geminiFormat).length, 'bytes');
+                
+                // Prepare request body for Gemini
+                var requestBody = {
+                    contents: geminiFormat.contents,
+                    generationConfig: {
+                        maxOutputTokens: AIConfig.maxTokens,
+                        temperature: AIConfig.temperature
+                    }
+                };
+                
+                // Add system instruction if present (Gemini requires Content object format)
+                if (geminiFormat.systemInstruction) {
+                    requestBody.systemInstruction = {
+                        parts: [{ text: geminiFormat.systemInstruction }]
+                    };
+                }
+                
+                // Prepare headers (API key goes in header as per Gemini API docs)
+                var headers = {
+                    'Content-Type': 'application/json',
+                    'x-goog-api-key': apiKey
+                };
+                
                 fetch(apiUrl, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        contents: contents,
-                        generationConfig: {
-                            maxOutputTokens: AIConfig.maxTokens,
-                            temperature: AIConfig.temperature
-                        }
-                    })
+                    mode: 'cors',
+                    headers: headers,
+                    body: JSON.stringify(requestBody)
                 })
                 .then(function(response) {
                     if (!response.ok) {
@@ -9667,7 +10157,7 @@
                             } else if (response.status === 429) {
                                 throw new Error('Rate limit exceeded. Please try again later.');
                             } else if (response.status === 400) {
-                                var errorMsg = err.error ? err.error.message : response.statusText;
+                                var errorMsg = err.error ? (err.error.message || err.error) : response.statusText;
                                 // Check if it's a payload size issue
                                 if (errorMsg && (errorMsg.toLowerCase().indexOf('too large') >= 0 || 
                                     errorMsg.toLowerCase().indexOf('token') >= 0 ||
@@ -9676,16 +10166,21 @@
                                 }
                                 throw new Error('API request failed: ' + errorMsg);
                             } else {
-                                throw new Error('API request failed: ' + (err.error ? err.error.message : response.statusText));
+                                throw new Error('API request failed: ' + (err.error ? (err.error.message || err.error) : response.statusText));
                             }
                         });
                     }
                     return response.json();
                 })
                 .then(function(data) {
-                    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts) {
-                        var assistantMessage = data.candidates[0].content.parts[0].text;
+                    // Convert Gemini response to OpenAI format for compatibility
+                    var openAIFormat = convertGeminiResponseToOpenAIFormat(data);
+                    if (openAIFormat.choices && openAIFormat.choices.length > 0 && openAIFormat.choices[0].message && openAIFormat.choices[0].message.content) {
+                        var assistantMessage = openAIFormat.choices[0].message.content;
                         addChatMessage('assistant', assistantMessage);
+                        
+                        // Speak the AI response using text-to-speech
+                        voiceRecognition.speak(assistantMessage);
                         
                         // Cache response
                         if (AIConfig.cacheEnabled) {
@@ -9700,10 +10195,29 @@
                 })
                 .catch(function(error) {
                     console.error('Error calling Gemini API:', error);
+                    console.error('Error details:', {
+                        name: error.name,
+                        message: error.message,
+                        stack: error.stack,
+                        apiUrl: apiUrl
+                    });
+                    
                     var errorMessage = '❌ Error: ' + error.message;
-                    if (error.message && error.message.indexOf('too large') >= 0) {
+                    
+                    // Provide more specific error messages
+                    if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+                        // General network error
+                        errorMessage = '❌ Network Error: Failed to connect to Gemini API.\n\n';
+                        errorMessage += 'Possible causes:\n';
+                        errorMessage += '• CORS (Cross-Origin) restrictions - API may not allow direct browser requests\n';
+                        errorMessage += '• Network connectivity issue\n';
+                        errorMessage += '• Firewall or security software blocking the request\n';
+                        errorMessage += '• Invalid API key\n';
+                        errorMessage += '\nPlease check the browser console (F12) for more details.';
+                    } else if (error.message && error.message.indexOf('too large') >= 0) {
                         errorMessage += '\n\nTip: The data context is very large. Try asking more specific questions about particular flood extents or barangays.';
                     }
+                    
                     addChatMessage('assistant', errorMessage);
                 })
                 .finally(function() {
@@ -9734,19 +10248,26 @@
          */
         function showAIChatOffcanvas() {
             try {
+                console.log('showAIChatOffcanvas called');
                 var panel = document.getElementById('ai-chat-panel');
                 if (!panel) {
                     console.error('AI chat panel not found');
                     return;
                 }
                 
+                console.log('Panel found, showing...');
+                
                 // Load chat history
                 if (typeof loadChatHistory === 'function') {
                     loadChatHistory();
                 }
                 
-                // Show panel
+                // Show panel - use !important to override any conflicting styles
                 panel.style.display = 'flex';
+                panel.style.visibility = 'visible';
+                panel.style.opacity = '1';
+                
+                console.log('Panel display set to:', panel.style.display);
                 
                 // Focus on input
                 setTimeout(function() {
@@ -9764,15 +10285,37 @@
                             e.preventDefault();
                             e.stopPropagation();
                             try {
-                                var currentKey = getGeminiAPIKey();
-                                var maskedKey = currentKey ? (currentKey.substring(0, 7) + '...' + currentKey.substring(currentKey.length - 4)) : 'Not set';
-                                var newKey = prompt('Gemini API Key Configuration\n\nCurrent key: ' + maskedKey + '\n\nEnter your Gemini API key (or leave empty to use default):', currentKey);
-                                if (newKey !== null) {
-                                    setGeminiAPIKey(newKey.trim());
-                                    if (newKey.trim() === '') {
-                                        alert('Using default API key.');
-                                    } else {
-                                        alert('API key saved successfully!');
+                                // Show settings menu
+                                var settingsMenu = '=== AI Settings ===\n\n';
+                                settingsMenu += '1. Gemini API Key\n';
+                                settingsMenu += '2. ElevenLabs API Key (for realistic voice)\n\n';
+                                settingsMenu += 'Enter option (1 or 2):';
+                                
+                                var option = prompt(settingsMenu);
+                                
+                                if (option === '1') {
+                                    var currentKey = getGeminiAPIKey();
+                                    var maskedKey = currentKey ? (currentKey.substring(0, 7) + '...' + currentKey.substring(currentKey.length - 4)) : 'Not set';
+                                    var newKey = prompt('Gemini API Key Configuration\n\nCurrent key: ' + maskedKey + '\n\nEnter your Gemini API key (or leave empty to use default):', currentKey);
+                                    if (newKey !== null) {
+                                        setGeminiAPIKey(newKey.trim());
+                                        if (newKey.trim() === '') {
+                                            alert('Using default API key.');
+                                        } else {
+                                            alert('Gemini API key saved successfully!');
+                                        }
+                                    }
+                                } else if (option === '2') {
+                                    var currentElevenLabsKey = getElevenLabsAPIKey();
+                                    var maskedElevenLabsKey = currentElevenLabsKey ? (currentElevenLabsKey.substring(0, 7) + '...' + currentElevenLabsKey.substring(currentElevenLabsKey.length - 4)) : 'Not set';
+                                    var newElevenLabsKey = prompt('ElevenLabs API Key Configuration\n\nFor realistic voice synthesis\n\nCurrent key: ' + maskedElevenLabsKey + '\n\nEnter your ElevenLabs API key (or leave empty to use browser TTS):', currentElevenLabsKey);
+                                    if (newElevenLabsKey !== null) {
+                                        setElevenLabsAPIKey(newElevenLabsKey.trim());
+                                        if (newElevenLabsKey.trim() === '') {
+                                            alert('Will use browser TTS (less realistic).');
+                                        } else {
+                                            alert('ElevenLabs API key saved successfully! Voice will now use realistic synthesis.');
+                                        }
                                     }
                                 }
                             } catch (err) {
@@ -9805,14 +10348,40 @@
                 AIConfig.apiKey = getGeminiAPIKey();
                 
                 // Chat input and send button - use popup panel input
-                var inputEl = document.getElementById('ai-chat-input');
-                var sendBtn = document.getElementById('ai-chat-send');
+                var inputEl = document.getElementById('ai-chat-input') || document.getElementById('ai-chat-input-offcanvas');
+                var sendBtn = document.getElementById('ai-chat-send') || document.getElementById('ai-chat-send-btn');
                 var clearBtn = document.getElementById('ai-chat-clear');
                 var floatBtn = document.getElementById('ai-chat-float-btn');
-                var suggestionBtns = document.querySelectorAll('.ai-suggestion-btn');
+                var voiceBtn = document.getElementById('ai-chat-voice-btn') || document.getElementById('ai-chat-voice-btn-offcanvas');
                 
                 // Debug logging
-                console.log('AI Chat Setup: inputEl found:', !!inputEl, 'sendBtn found:', !!sendBtn);
+                console.log('AI Chat Setup: inputEl found:', !!inputEl, 'sendBtn found:', !!sendBtn, 'voiceBtn found:', !!voiceBtn);
+                
+                // Initialize voice recognition
+                if (!voiceRecognition.recognition) {
+                    if (voiceRecognition.init()) {
+                        // Auto-start listening for wake word detection
+                        setTimeout(function() {
+                            voiceRecognition.startListening();
+                        }, 500);
+                    }
+                } else if (!voiceRecognition.isListening) {
+                    // Restart if not listening
+                    setTimeout(function() {
+                        voiceRecognition.startListening();
+                    }, 500);
+                }
+                
+                // Voice button - toggle listening
+                if (voiceBtn && !voiceBtn._wired) {
+                    voiceBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        voiceRecognition.toggleListening();
+                    });
+                    voiceBtn._wired = true;
+                    console.log('AI Chat: Voice button event listener attached');
+                }
                 
                 // Send on button click
                 if (sendBtn) {
@@ -9821,14 +10390,14 @@
                         sendBtn.addEventListener('click', function(e) {
                             e.preventDefault();
                             e.stopPropagation();
-                            if (inputEl && inputEl.value.trim()) {
+                        if (inputEl && inputEl.value.trim()) {
                                 console.log('AI Chat: Sending message:', inputEl.value.trim());
-                                sendChatMessage(inputEl.value.trim());
-                                inputEl.value = '';
+                            sendChatMessage(inputEl.value.trim());
+                            inputEl.value = '';
                             } else {
                                 console.warn('AI Chat: Cannot send - inputEl:', !!inputEl, 'value:', inputEl ? inputEl.value : 'N/A');
-                            }
-                        });
+                        }
+                    });
                         sendBtn._wired = true;
                         console.log('AI Chat: Send button event listener attached');
                     }
@@ -9840,16 +10409,16 @@
                 if (inputEl) {
                     // Only add listener if not already wired
                     if (!inputEl._wired) {
-                        inputEl.addEventListener('keypress', function(e) {
-                            if (e.key === 'Enter' && !e.shiftKey) {
-                                e.preventDefault();
-                                if (this.value.trim()) {
+                    inputEl.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            if (this.value.trim()) {
                                     console.log('AI Chat: Sending message via Enter:', this.value.trim());
-                                    sendChatMessage(this.value.trim());
-                                    this.value = '';
-                                }
+                                sendChatMessage(this.value.trim());
+                                this.value = '';
                             }
-                        });
+                        }
+                    });
                         inputEl._wired = true;
                         // Ensure input is enabled and focusable
                         inputEl.disabled = false;
@@ -9898,23 +10467,24 @@
                 
                 // Floating button
                 if (floatBtn) {
-                    floatBtn.addEventListener('click', showAIChatOffcanvas);
+                    // Only add listener if not already wired
+                    if (!floatBtn._wired) {
+                        floatBtn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log('Float button clicked');
+                            showAIChatOffcanvas();
+                        });
+                        floatBtn._wired = true;
+                        console.log('AI Chat: Float button event listener attached');
+                    } else {
+                        console.log('AI Chat: Float button already wired');
+                    }
+                } else {
+                    console.warn('AI Chat: Float button not found');
                 }
                 
-                // Suggestion buttons - send message directly
-                suggestionBtns.forEach(function(btn) {
-                    btn.addEventListener('click', function() {
-                        var suggestion = this.getAttribute('data-suggestion');
-                        if (suggestion) {
-                            if (typeof sendChatMessage === 'function') {
-                                sendChatMessage(suggestion);
-                            } else if (inputEl) {
-                                inputEl.value = suggestion;
-                                inputEl.focus();
-                            }
-                        }
-                    });
-                });
+                // Suggestion buttons removed - using voice input instead
                 
                 console.log('AI Chat Assistant initialized');
             } catch (e) {
@@ -10016,30 +10586,44 @@
                     'Return ONLY a valid JSON array, no other text. ' +
                     'Data: ' + JSON.stringify(summary, null, 2);
                 
-                // Build Gemini request
-                var contents = [{
+                // Build Gemini request format
+                var messages = [{
+                    role: 'system',
+                    content: 'You are an expert in disaster management and flood impact assessment. Provide insights in JSON format: [{"category": "Priority Alert|Key Finding|Recommendation|Data Anomaly", "text": "insight text"}]. Return ONLY the JSON array, no other text.'
+                }, {
                     role: 'user',
-                    parts: [{
-                        text: 'You are an expert in disaster management and flood impact assessment. ' +
-                              'Provide insights in JSON format: [{"category": "Priority Alert|Key Finding|Recommendation|Data Anomaly", "text": "insight text"}]. ' +
-                              'Return ONLY the JSON array, no other text.\n\n' + prompt
-                    }]
+                    content: prompt
                 }];
                 
-                // Make API call to Gemini
-                var apiUrl = AIConfig.apiEndpoint + '?key=' + encodeURIComponent(apiKey);
+                // Convert to Gemini format
+                var geminiFormat = convertMessagesToGeminiFormat(messages);
+                
+                // Make API call to Gemini (API key goes in header, not query parameter)
+                var apiUrl = AIConfig.apiEndpoint + '/' + AIConfig.model + ':generateContent';
+                
+                // Prepare request body for Gemini
+                var requestBody = {
+                    contents: geminiFormat.contents,
+                    generationConfig: {
+                        maxOutputTokens: 800,
+                        temperature: 0.7
+                    }
+                };
+                
+                // Add system instruction if present (Gemini requires Content object format)
+                if (geminiFormat.systemInstruction) {
+                    requestBody.systemInstruction = {
+                        parts: [{ text: geminiFormat.systemInstruction }]
+                    };
+                }
+                
                 fetch(apiUrl, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'x-goog-api-key': apiKey
                     },
-                    body: JSON.stringify({
-                        contents: contents,
-                        generationConfig: {
-                            maxOutputTokens: 800,
-                            temperature: 0.7
-                        }
-                    })
+                    body: JSON.stringify(requestBody)
                 })
                 .then(function(response) {
                     if (!response.ok) {
@@ -10048,8 +10632,10 @@
                     return response.json();
                 })
                 .then(function(data) {
-                    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts) {
-                        var content = data.candidates[0].content.parts[0].text;
+                    // Convert Gemini response to OpenAI format for compatibility
+                    var openAIFormat = convertGeminiResponseToOpenAIFormat(data);
+                    if (openAIFormat.choices && openAIFormat.choices.length > 0 && openAIFormat.choices[0].message && openAIFormat.choices[0].message.content) {
+                        var content = openAIFormat.choices[0].message.content;
                         // Try to parse JSON from response
                         var jsonMatch = content.match(/\[[\s\S]*\]/);
                         if (jsonMatch) {
@@ -11525,130 +12111,15 @@
             }
         }
         
-        /**
-         * Gets analysis summary data for a given meter level.
-         * Returns the GeoJSON data object from the corresponding analysis summary file.
-         * @param {string|number} meter - The meter level (24, 25, 26, 27, 28, 29, or 30)
-         * @returns {object|null} The analysis summary GeoJSON data or null if not found
-         */
-        function getAnalysisSummaryData(meter) {
-            try {
-                var meterNum = parseInt(String(meter).replace(/[^0-9]/g, ''), 10);
-                var dataVarName = '';
-                
-                if (meterNum === 24) {
-                    dataVarName = 'json_24MetersAnalysisSummary_0';
-                } else if (meterNum === 25) {
-                    dataVarName = 'json_25MetersAnalysisSummary_2';
-                } else if (meterNum === 26) {
-                    dataVarName = 'json_26MetersAnalysisSummary_4';
-                } else if (meterNum === 27) {
-                    dataVarName = 'json_27MetersAnalysisSummary_6';
-                } else if (meterNum === 28) {
-                    dataVarName = 'json_28MetersAnalysisSummary_8';
-                } else if (meterNum === 29) {
-                    dataVarName = 'json_29MetersAnalysisSummary_10';
-                } else if (meterNum === 30) {
-                    dataVarName = 'json_30MetersAnalysisSummary_12';
-                }
-                
-                if (dataVarName && window[dataVarName]) {
-                    return window[dataVarName];
-                }
-                
-                return null;
-            } catch (e) {
-                console.error('Error getting analysis summary data:', e);
-                return null;
-            }
-        }
-        
-        /**
-         * Gets all aggregation summary data for all flood extents (24-30 meters).
-         * Returns an object with meter levels as keys and aggregation data as values.
-         * @returns {object} Object with all aggregation summary data organized by meter level
-         */
-        function getAllAggregationSummaryData() {
-            try {
-                var allData = {};
-                var meters = [24, 25, 26, 27, 28, 29, 30];
-                
-                meters.forEach(function(meter) {
-                    var data = getAggregationSummaryData(meter);
-                    if (data) {
-                        allData[meter] = data;
-                    }
-                });
-                
-                return allData;
-            } catch (e) {
-                console.error('Error getting all aggregation summary data:', e);
-                return {};
-            }
-        }
-        
-        /**
-         * Gets all analysis summary data for all flood extents (24-30 meters).
-         * Returns an object with meter levels as keys and analysis data as values.
-         * @returns {object} Object with all analysis summary data organized by meter level
-         */
-        function getAllAnalysisSummaryData() {
-            try {
-                var allData = {};
-                var meters = [24, 25, 26, 27, 28, 29, 30];
-                
-                meters.forEach(function(meter) {
-                    var data = getAnalysisSummaryData(meter);
-                    if (data) {
-                        allData[meter] = data;
-                    }
-                });
-                
-                return allData;
-            } catch (e) {
-                console.error('Error getting all analysis summary data:', e);
-                return {};
-            }
-        }
-        
-        /**
-         * Gets DB_0.js data.
-         * Returns the GeoJSON data object from DB_0.js file.
-         * @returns {object|null} The DB_0 GeoJSON data or null if not found
-         */
-        function getDB0Data() {
-            try {
-                if (typeof json_DB_0 !== 'undefined' && json_DB_0) {
-                    return json_DB_0;
-                }
-                return null;
-            } catch (e) {
-                console.error('Error getting DB_0 data:', e);
-                return null;
-            }
-        }
-        
-        /**
-         * Gets StoTomasHouseholdsjoined_layer_1.js data.
-         * Returns the GeoJSON data object from StoTomasHouseholdsjoined_layer_1.js file.
-         * @returns {object|null} The StoTomasHouseholdsjoined GeoJSON data or null if not found
-         */
-        function getStoTomasHouseholdsData() {
-            try {
-                // Check for the primary variable name
-                if (typeof json_StoTomasHouseholdsjoined_layer_1 !== 'undefined' && json_StoTomasHouseholdsjoined_layer_1) {
-                    return json_StoTomasHouseholdsjoined_layer_1;
-                }
-                // Check for alias variable name
-                if (typeof json_FinalHouseholdstotomas_householdsnew__joined_layer_0 !== 'undefined' && json_FinalHouseholdstotomas_householdsnew__joined_layer_0) {
-                    return json_FinalHouseholdstotomas_householdsnew__joined_layer_0;
-                }
-                return null;
-            } catch (e) {
-                console.error('Error getting StoTomasHouseholdsjoined data:', e);
-                return null;
-            }
-        }
+        // Removed functions that feed all data to AI to avoid token limit issues:
+        // - getAnalysisSummaryData()
+        // - getAllAggregationSummaryData()
+        // - getAllAnalysisSummaryData()
+        // - getDB0Data()
+        // - getStoTomasHouseholdsData()
+        // 
+        // The AI now only receives data for the currently selected flood extent and barangays
+        // to keep the context size manageable and avoid exceeding token limits.
         
         /**
          * Normalizes a name for comparison by removing special characters, spaces, and converting to lowercase.
@@ -13255,13 +13726,11 @@
                 
                 <!-- Chat Input Area -->
                 <div class="ai-chat-input-container">
-                    <div class="ai-chat-suggestions" id="ai-chat-suggestions">
-                        <button class="ai-suggestion-btn" data-suggestion="What is the total affected population?">What is the total affected population?</button>
-                        <button class="ai-suggestion-btn" data-suggestion="Which barangay has the highest displacement rate?">Which barangay has the highest displacement rate?</button>
-                        <button class="ai-suggestion-btn" data-suggestion="What are the key minimum needs?">What are the key minimum needs?</button>
-                    </div>
                     <div class="ai-chat-input-wrapper">
-                        <input type="text" id="ai-chat-input-offcanvas" class="ai-chat-input" placeholder="Ask a question about the flood impact data..." />
+                        <button id="ai-chat-voice-btn-offcanvas" class="ai-chat-voice-button" title="Voice input (Say 'Hey Tomas' to activate)">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <input type="text" id="ai-chat-input-offcanvas" class="ai-chat-input" placeholder="Ask a question or say 'Hey Tomas' for voice..." />
                         <button id="ai-chat-send-btn" class="ai-chat-send-btn" title="Send message">
                             <i class="fas fa-paper-plane"></i>
                         </button>
