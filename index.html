@@ -9320,7 +9320,7 @@
         var ElevenLabsConfig = {
             apiKey: 'sk_c9e0fb7e83fef0407c1adac637c8796d5713be929dc06d06', // Default API key
             apiEndpoint: 'https://api.elevenlabs.io/v1/text-to-speech',
-            voiceId: '21m00Tcm4TlvDq8ikWAM', // Default voice (Rachel - clear and natural)
+            voiceId: 'VR6AewLTigWG4xSOukaG', // Arnold - deep, authoritative male voice
             modelId: 'eleven_multilingual_v2' // Multilingual model
         };
         
@@ -9478,6 +9478,22 @@
                             }
                         }
                         
+                        // Update input box with both final and interim transcripts
+                        var inputEl = document.getElementById('ai-chat-input') || document.getElementById('ai-chat-input-offcanvas');
+                        if (inputEl) {
+                            // Keep input box enabled and active
+                            inputEl.disabled = false;
+                            inputEl.readOnly = false;
+                            
+                            // Show combined transcript in input box
+                            var combinedTranscript = (finalTranscript + interimTranscript).trim();
+                            if (combinedTranscript) {
+                                inputEl.value = combinedTranscript;
+                                // Trigger input event to update UI
+                                inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+                            }
+                        }
+                        
                         // Only process final results for wake word detection
                         if (finalTranscript.trim()) {
                             var fullTranscript = finalTranscript.trim();
@@ -9573,19 +9589,29 @@
             processCommand: function(command) {
                 if (!command || command.trim() === '') return;
                 
-                // Update input field
+                // Update input field and keep it active
                 var inputEl = document.getElementById('ai-chat-input') || document.getElementById('ai-chat-input-offcanvas');
                 if (inputEl) {
                     inputEl.value = command.trim();
+                    inputEl.disabled = false;
+                    inputEl.readOnly = false;
+                    // Focus the input to show it's active
+                    inputEl.focus();
+                    // Trigger input event
+                    inputEl.dispatchEvent(new Event('input', { bubbles: true }));
                 }
                 
-                // Send message after a short delay
+                // Send message after a short delay (user can see it in input box first)
                 var self = this;
                 setTimeout(function() {
                     sendChatMessage(command.trim());
+                    // Clear input after sending
+                    if (inputEl) {
+                        inputEl.value = '';
+                    }
                     // Deactivate wake word after sending
                     self.deactivateWakeWord();
-                }, 300);
+                }, 500);
             },
             
             /**
@@ -9605,6 +9631,17 @@
                     if (!this.init()) {
                         alert('Voice recognition is not supported in your browser.');
                         return;
+                    }
+                }
+                
+                // Ensure input box is active and enabled
+                var inputEl = document.getElementById('ai-chat-input') || document.getElementById('ai-chat-input-offcanvas');
+                if (inputEl) {
+                    inputEl.disabled = false;
+                    inputEl.readOnly = false;
+                    // Clear placeholder text to show it's ready
+                    if (!inputEl.value) {
+                        inputEl.placeholder = 'Listening... Say "Hey Tomas" or speak your question';
                     }
                 }
                 
@@ -9638,6 +9675,16 @@
                 this.wakeWordActive = false;
                 this.isListening = false;
                 this.updateVoiceButtonState();
+                
+                // Restore input box placeholder and keep it active
+                var inputEl = document.getElementById('ai-chat-input') || document.getElementById('ai-chat-input-offcanvas');
+                if (inputEl) {
+                    inputEl.disabled = false;
+                    inputEl.readOnly = false;
+                    if (!inputEl.value) {
+                        inputEl.placeholder = 'Ask a question or say "Hey Tomas" for voice...';
+                    }
+                }
             },
             
             /**
@@ -10024,10 +10071,14 @@
                 // Show loading indicator
                 var loadingEl = document.getElementById('ai-chat-loading');
                 var sendBtn = document.getElementById('ai-chat-send') || document.getElementById('ai-chat-send-btn');
-                var inputEl = document.getElementById('ai-chat-input');
+                var inputEl = document.getElementById('ai-chat-input') || document.getElementById('ai-chat-input-offcanvas');
                 if (loadingEl) loadingEl.style.display = 'flex';
                 if (sendBtn) sendBtn.disabled = true;
-                if (inputEl) inputEl.disabled = true;
+                // Keep input box enabled but show it's processing
+                if (inputEl) {
+                    inputEl.readOnly = true; // Make read-only during processing, but still visible
+                    inputEl.style.opacity = '0.7';
+                }
                 
                 // Get context
                 var context = getChatContext();
@@ -10107,7 +10158,11 @@
                             addChatMessage('assistant', cached.response);
                             if (loadingEl) loadingEl.style.display = 'none';
                             if (sendBtn) sendBtn.disabled = false;
-                            if (inputEl) inputEl.disabled = false;
+                            if (inputEl) {
+                                inputEl.disabled = false;
+                                inputEl.readOnly = false;
+                                inputEl.style.opacity = '1';
+                            }
                         }, 300);
                         return;
                     }
@@ -10225,6 +10280,8 @@
                     if (sendBtn) sendBtn.disabled = false;
                     if (inputEl) {
                         inputEl.disabled = false;
+                        inputEl.readOnly = false;
+                        inputEl.style.opacity = '1';
                         inputEl.focus();
                     }
                 });
@@ -10233,11 +10290,13 @@
                 addChatMessage('assistant', '❌ An error occurred. Please try again.');
                 var loadingEl = document.getElementById('ai-chat-loading');
                 var sendBtn = document.getElementById('ai-chat-send') || document.getElementById('ai-chat-send-btn');
-                var inputEl = document.getElementById('ai-chat-input');
+                var inputEl = document.getElementById('ai-chat-input') || document.getElementById('ai-chat-input-offcanvas');
                 if (loadingEl) loadingEl.style.display = 'none';
                 if (sendBtn) sendBtn.disabled = false;
                 if (inputEl) {
                     inputEl.disabled = false;
+                    inputEl.readOnly = false;
+                    inputEl.style.opacity = '1';
                     inputEl.focus();
                 }
             }
