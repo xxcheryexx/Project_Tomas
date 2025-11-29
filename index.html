@@ -9307,7 +9307,7 @@
          * Gemini API uses Google's Generative AI API format
          */
         var AIConfig = {
-            apiKey: 'AIzaSyDBJW6zj3Z5puCEO7yY3vjeuLZcEZo4GFo', // Default API key
+            apiKey: 'AIzaSyC57Domcc3crRF5WZ5h4aMx1BClPi7SfKI', // Default API key
             apiEndpoint: 'https://generativelanguage.googleapis.com/v1beta/models', // Gemini API base endpoint
             model: 'gemini-2.5-flash', // Gemini model name (using 2.5-flash as per official docs)
             maxTokens: 1000,
@@ -9318,7 +9318,7 @@
         
         // ElevenLabs TTS Configuration
         var ElevenLabsConfig = {
-            apiKey: 'sk_c9e0fb7e83fef0407c1adac637c8796d5713be929dc06d06', // Default API key
+            apiKey: 'sk_37abbd07678a6663aa7dbac25eaf9ca7a984aee31b68a35b', // Default API key
             apiEndpoint: 'https://api.elevenlabs.io/v1/text-to-speech',
             voiceId: 'VR6AewLTigWG4xSOukaG', // Arnold - deep, authoritative male voice
             modelId: 'eleven_multilingual_v2' // Multilingual model
@@ -9442,6 +9442,8 @@
             currentTranscript: '',
             speechSynthesis: window.speechSynthesis || window.webkitSpeechSynthesis,
             currentUtterance: null,
+            pendingAutoSend: null,
+            autoSendTimeout: null,
             
             /**
              * Initialize voice recognition
@@ -9481,7 +9483,7 @@
                         // Update input box with both final and interim transcripts
                         var inputEl = document.getElementById('ai-chat-input') || document.getElementById('ai-chat-input-offcanvas');
                         if (inputEl) {
-                            // Keep input box enabled and active
+                            // Always keep input box enabled and editable
                             inputEl.disabled = false;
                             inputEl.readOnly = false;
                             
@@ -9494,12 +9496,43 @@
                             }
                         }
                         
-                        // Only process final results for wake word detection
+                        // Process final results for wake word detection and auto-send
                         if (finalTranscript.trim()) {
                             var fullTranscript = finalTranscript.trim();
                             self.currentTranscript = fullTranscript.toLowerCase();
                             console.log('Final transcript:', fullTranscript);
-                            self.handleSpeechResult(fullTranscript);
+                            
+                            // If wake word is active, process as command (will auto-send)
+                            if (self.wakeWordActive) {
+                                self.handleSpeechResult(fullTranscript);
+                            } else {
+                                // Check for wake word first
+                                self.handleSpeechResult(fullTranscript);
+                                
+                                // If not wake word and user is using microphone (not wake word mode),
+                                // auto-send after a short delay when speech stops
+                                if (!self.wakeWordActive && self.isListening) {
+                                    // Store the transcript for auto-send
+                                    self.pendingAutoSend = fullTranscript;
+                                    // Clear any existing timeout
+                                    if (self.autoSendTimeout) {
+                                        clearTimeout(self.autoSendTimeout);
+                                    }
+                                    // Set timeout to auto-send after user stops speaking (1 second)
+                                    self.autoSendTimeout = setTimeout(function() {
+                                        if (self.pendingAutoSend && self.pendingAutoSend.trim()) {
+                                            var inputEl = document.getElementById('ai-chat-input') || document.getElementById('ai-chat-input-offcanvas');
+                                            if (inputEl && inputEl.value.trim() === self.pendingAutoSend.trim()) {
+                                                console.log('Auto-sending voice input:', self.pendingAutoSend);
+                                                sendChatMessage(self.pendingAutoSend);
+                                                inputEl.value = '';
+                                                self.pendingAutoSend = null;
+                                                self.stopListening();
+                                            }
+                                        }
+                                    }, 1000);
+                                }
+                            }
                         }
                     };
                     
@@ -9523,6 +9556,18 @@
                     this.recognition.onend = function() {
                         self.isListening = false;
                         self.updateVoiceButtonState();
+                        
+                        // Auto-send if there's pending text and not in wake word mode
+                        if (!self.wakeWordActive && self.pendingAutoSend && self.pendingAutoSend.trim()) {
+                            var inputEl = document.getElementById('ai-chat-input') || document.getElementById('ai-chat-input-offcanvas');
+                            if (inputEl && inputEl.value.trim()) {
+                                console.log('Auto-sending voice input on end:', self.pendingAutoSend);
+                                sendChatMessage(self.pendingAutoSend);
+                                inputEl.value = '';
+                                self.pendingAutoSend = null;
+                            }
+                        }
+                        
                         // Restart if wake word was active
                         if (self.wakeWordActive) {
                             setTimeout(function() {
@@ -9589,7 +9634,7 @@
             processCommand: function(command) {
                 if (!command || command.trim() === '') return;
                 
-                // Update input field and keep it active
+                // Update input field and keep it active and editable
                 var inputEl = document.getElementById('ai-chat-input') || document.getElementById('ai-chat-input-offcanvas');
                 if (inputEl) {
                     inputEl.value = command.trim();
@@ -9601,13 +9646,19 @@
                     inputEl.dispatchEvent(new Event('input', { bubbles: true }));
                 }
                 
-                // Send message after a short delay (user can see it in input box first)
+                // Auto-send message after a short delay (user can see it in input box first)
                 var self = this;
                 setTimeout(function() {
                     sendChatMessage(command.trim());
                     // Clear input after sending
                     if (inputEl) {
                         inputEl.value = '';
+                    }
+                    // Clear pending auto-send
+                    self.pendingAutoSend = null;
+                    if (self.autoSendTimeout) {
+                        clearTimeout(self.autoSendTimeout);
+                        self.autoSendTimeout = null;
                     }
                     // Deactivate wake word after sending
                     self.deactivateWakeWord();
@@ -9672,11 +9723,29 @@
                         console.error('Error stopping recognition:', e);
                     }
                 }
+                
+                // Auto-send if there's pending text and not in wake word mode
+                if (!this.wakeWordActive && this.pendingAutoSend && this.pendingAutoSend.trim()) {
+                    var inputEl = document.getElementById('ai-chat-input') || document.getElementById('ai-chat-input-offcanvas');
+                    if (inputEl && inputEl.value.trim()) {
+                        console.log('Auto-sending voice input on stop:', this.pendingAutoSend);
+                        sendChatMessage(this.pendingAutoSend);
+                        inputEl.value = '';
+                        this.pendingAutoSend = null;
+                    }
+                }
+                
+                // Clear auto-send timeout
+                if (this.autoSendTimeout) {
+                    clearTimeout(this.autoSendTimeout);
+                    this.autoSendTimeout = null;
+                }
+                
                 this.wakeWordActive = false;
                 this.isListening = false;
                 this.updateVoiceButtonState();
                 
-                // Restore input box placeholder and keep it active
+                // Keep input box active and editable
                 var inputEl = document.getElementById('ai-chat-input') || document.getElementById('ai-chat-input-offcanvas');
                 if (inputEl) {
                     inputEl.disabled = false;
@@ -10051,6 +10120,72 @@
         }
         
         /**
+         * Detects if user message requests aggregation summary data
+         * @param {string} message - User message
+         * @returns {Object|null} Object with meter value if detected, null otherwise
+         */
+        function detectAggregationSummaryRequest(message) {
+            if (!message || typeof message !== 'string') {
+                return null;
+            }
+            
+            var lowerMessage = message.toLowerCase();
+            
+            // Trigger words/phrases that indicate user wants aggregation summary
+            var triggerWords = [
+                'aggregation summary',
+                'summary',
+                'insights',
+                'data',
+                'results',
+                'report',
+                'statistics',
+                'overview'
+            ];
+            
+            // Check if message contains any trigger word
+            var hasTrigger = false;
+            for (var i = 0; i < triggerWords.length; i++) {
+                if (lowerMessage.indexOf(triggerWords[i]) >= 0) {
+                    hasTrigger = true;
+                    break;
+                }
+            }
+            
+            if (!hasTrigger) {
+                return null;
+            }
+            
+            // Extract meter value from message (24-30)
+            var meterPattern = /\b(24|25|26|27|28|29|30)\s*(?:meter|meters|m)\b/i;
+            var match = message.match(meterPattern);
+            
+            if (match) {
+                return {
+                    meter: parseInt(match[1], 10),
+                    detected: true
+                };
+            }
+            
+            // Also check for just numbers 24-30 in context
+            var numberPattern = /\b(24|25|26|27|28|29|30)\b/;
+            var numberMatch = message.match(numberPattern);
+            
+            if (numberMatch) {
+                return {
+                    meter: parseInt(numberMatch[1], 10),
+                    detected: true
+                };
+            }
+            
+            // If trigger word found but no meter, return object indicating request but no meter
+            return {
+                meter: null,
+                detected: true
+            };
+        }
+        
+        /**
          * Sends a chat message to Gemini API
          * @param {string} message - User message
          */
@@ -10074,18 +10209,48 @@
                 var inputEl = document.getElementById('ai-chat-input') || document.getElementById('ai-chat-input-offcanvas');
                 if (loadingEl) loadingEl.style.display = 'flex';
                 if (sendBtn) sendBtn.disabled = true;
-                // Keep input box enabled but show it's processing
+                // Keep input box enabled and editable at all times
                 if (inputEl) {
-                    inputEl.readOnly = true; // Make read-only during processing, but still visible
-                    inputEl.style.opacity = '0.7';
+                    inputEl.disabled = false;
+                    inputEl.readOnly = false;
+                    inputEl.style.opacity = '1';
                 }
                 
-                // Get context
+                // Get context first (used for both aggregation request and normal context)
                 var context = getChatContext();
+                
+                // Check if user is requesting aggregation summary data
+                var aggregationRequest = detectAggregationSummaryRequest(message);
+                var aggregationInsights = null;
+                var requestedMeter = null;
+                
+                if (aggregationRequest && aggregationRequest.detected) {
+                    // Determine which meter to use
+                    requestedMeter = aggregationRequest.meter;
+                    if (!requestedMeter) {
+                        // If no meter specified, use currently selected flood extent
+                        requestedMeter = context.floodExtentMeter;
+                    }
+                    
+                    if (requestedMeter) {
+                        // Extract aggregation summary insights
+                        aggregationInsights = extractAggregationSummaryInsights(requestedMeter);
+                        if (aggregationInsights) {
+                            console.log('Aggregation summary data loaded for', requestedMeter, 'meters');
+                        } else {
+                            console.warn('No aggregation summary data available for', requestedMeter, 'meters');
+                        }
+                    } else {
+                        console.warn('Aggregation summary requested but no meter value available');
+                    }
+                }
                 
                 // Check data size and warn if very large
                 try {
                     var contextSize = JSON.stringify(context).length;
+                    if (aggregationInsights) {
+                        contextSize += JSON.stringify(aggregationInsights).length;
+                    }
                     var contextSizeKB = (contextSize / 1024).toFixed(2);
                     var contextSizeMB = (contextSize / (1024 * 1024)).toFixed(2);
                     console.log('Chat context size: ' + contextSizeKB + ' KB (' + contextSizeMB + ' MB)');
@@ -10098,25 +10263,92 @@
                     console.warn('Could not calculate context size:', e);
                 }
                 
-                // Build system instruction with simplified data explanation
+                // Build system instruction with expanded role and capabilities
                 var systemInstruction = 'You are an AI assistant for a flood impact assessment application called PROJECT TOMaS (Tactical Overlay for Mapping and Safety). ' +
-                    'You help users understand flood impact data including affected population, demographics, displacement, and minimum needs. ' +
+                    'You serve as both an Environmental Planner and a Disaster Risk Reduction (DRR) Officer with expertise in flood management, emergency response, and community resilience. ' +
                     '\n\n' +
-                    'DATA STRUCTURE:\n' +
+                    'YOUR EXPERTISE AND ROLE:\n' +
+                    '1. Environmental Planning: Analyze flood impacts from an environmental and urban planning perspective, considering land use, infrastructure, and ecosystem services.\n' +
+                    '2. Disaster Risk Reduction: Assess vulnerabilities, identify risks, and recommend evidence-based mitigation strategies.\n' +
+                    '3. Emergency Response Planning: Provide actionable recommendations for immediate response and long-term recovery.\n' +
+                    '4. Community Resilience: Suggest measures to strengthen community capacity to withstand and recover from flood events.\n' +
+                    '\n' +
+                    'YOUR CAPABILITIES:\n' +
+                    '- Analyze flood impact data (population affected, demographics, displacement, minimum needs)\n' +
+                    '- Identify vulnerable populations and critical infrastructure at risk\n' +
+                    '- Suggest specific mitigating measures and strategies to counter flood effects\n' +
+                    '- Recommend structural and non-structural flood control measures\n' +
+                    '- Provide evacuation planning and emergency response strategies\n' +
+                    '- Suggest community-based disaster risk reduction initiatives\n' +
+                    '- Recommend early warning systems and preparedness measures\n' +
+                    '- Advise on post-flood recovery and rehabilitation strategies\n' +
+                    '- Consider environmental impacts and sustainable solutions\n' +
+                    '\n';
+                
+                // Add aggregation summary data if requested
+                if (aggregationInsights) {
+                    systemInstruction += 'AGGREGATION SUMMARY DATA REQUESTED:\n' +
+                        'The user has requested aggregation summary insights for ' + aggregationInsights.floodExtent + '.\n' +
+                        'Use the following data to provide a comprehensive report:\n\n' +
+                        JSON.stringify(aggregationInsights, null, 2) + '\n\n' +
+                        'When providing aggregation summary insights, format your response as flowing paragraphs (NOT bullet points or lists with asterisks). ' +
+                        'Incorporate the following information naturally into your narrative:\n' +
+                        '- Total Affected Population\n' +
+                        '- Age Group Summary (Infant, Child, Adult, Elderly)\n' +
+                        '- Gender Breakdown (Male, Female)\n' +
+                        '- Minimum Needs Summary (only non-zero values)\n' +
+                        '- Risk Assessment: Analyze vulnerabilities based on the data\n' +
+                        '- Mitigation Recommendations: Suggest specific structural and non-structural measures\n' +
+                        '- Emergency Response Priorities: Based on affected population and demographics\n\n' +
+                        'Write in paragraph form with smooth transitions between topics. Do NOT use asterisks (*), dashes (-), or bullet symbols. ' +
+                        'Use natural language that flows well when read aloud. Be comprehensive but write as continuous prose. ' +
+                        'provide actionable recommendations to counter flood effects.\n\n';
+                }
+                
+                systemInstruction += 'DATA STRUCTURE:\n' +
                     'The context includes data for the currently selected flood extent and barangays:\n' +
                     '1. selectedBarangays: Array of currently selected barangay names.\n' +
                     '2. floodExtentMeter: Currently selected flood extent in meters (24-30).\n' +
                     '3. demographics: Filtered demographic data for currently selected barangays and flood extent.\n' +
                     '4. minimumNeeds: Filtered minimum needs data for currently selected barangays and flood extent.\n' +
                     '\n' +
+                    'RESPONSE FORMAT:\n' +
+                    'IMPORTANT: Always respond in paragraph form. Do NOT use bullet points, asterisks (*), dashes (-), or numbered lists. ' +
+                    'Write in flowing, natural paragraphs that can be easily read aloud by text-to-speech. ' +
+                    'Use smooth transitions between topics and incorporate all information naturally into continuous prose.\n\n' +
+                    'WHEN PROVIDING RECOMMENDATIONS:\n' +
+                    'Base your analysis on the flood impact data provided (affected population, demographics, displacement, minimum needs). ' +
+                    'Consider the specific flood extent (24-30 meters) when recommending mitigation measures. ' +
+                    'Reference specific barangays when providing location-specific recommendations. ' +
+                    'Provide actionable, specific mitigating measures and strategies. ' +
+                    'Consider both immediate response needs and long-term resilience building. ' +
+                    'Suggest a combination of structural (infrastructure) and non-structural (policy, planning, community-based) measures. ' +
+                    'Prioritize recommendations based on vulnerability and impact data. ' +
+                    'Consider environmental sustainability in all recommendations.\n\n' +
+                    'TYPES OF RECOMMENDATIONS YOU CAN PROVIDE:\n' +
+                    'You can provide recommendations including structural measures such as flood walls, drainage systems, retention ponds, elevated infrastructure, and flood-proofing buildings. ' +
+                    'Non-structural measures include land use planning, zoning regulations, building codes, flood insurance, and early warning systems. ' +
+                    'For emergency response, consider evacuation routes, emergency shelters, communication systems, and resource allocation. ' +
+                    'Community preparedness involves training programs, community drills, local DRR committees, and public awareness campaigns. ' +
+                    'Environmental solutions include green infrastructure, wetland restoration, reforestation, and natural flood management. ' +
+                    'Recovery strategies encompass post-flood rehabilitation, livelihood restoration, infrastructure rebuilding, and psychological support.\n\n' +
                     'When answering questions:\n' +
-                    '- Answer based on the currently selected flood extent and barangays.\n' +
-                    '- Reference specific barangays and the flood extent in your answers.\n' +
-                    '- If asked about data not in the current selection, let the user know they need to select the relevant flood extent or barangays.\n' +
-                    '- If specific data is not available in the context, let the user know.\n' +
-                    '\n' +
-                    'Current context: ' + JSON.stringify(context, null, 2) + '\n\n' +
-                    'Provide clear, concise, and helpful answers about the flood impact data.';
+                    'Provide comprehensive analysis combining data interpretation with professional expertise. ' +
+                    'Reference specific barangays and flood extents in your recommendations. ' +
+                    'If asked about data not in the current selection, let the user know they need to select the relevant flood extent or barangays. ' +
+                    'If specific data is not available, use your expertise to provide general guidance while noting data limitations. ' +
+                    'Always consider the context of the Philippines and local conditions when making recommendations. ' +
+                    'Remember to write in paragraph form without using bullet points or asterisks.\n';
+                
+                // Only include current context if aggregation summary was not requested (to avoid duplication)
+                if (!aggregationInsights) {
+                    systemInstruction += '\n' +
+                        'Current context: ' + JSON.stringify(context, null, 2) + '\n\n';
+                }
+                
+                systemInstruction += 'Provide clear, concise, and helpful answers about the flood impact data. ' +
+                    'Remember: Always write in paragraph form without using bullet points, asterisks, dashes, or numbered lists. ' +
+                    'Use flowing, natural prose that reads well when spoken aloud by text-to-speech.';
                 
                 // Build conversation history for Gemini format
                 var messages = [];
@@ -10261,14 +10493,14 @@
                     
                     // Provide more specific error messages
                     if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
-                        // General network error
+                            // General network error
                         errorMessage = '❌ Network Error: Failed to connect to Gemini API.\n\n';
-                        errorMessage += 'Possible causes:\n';
-                        errorMessage += '• CORS (Cross-Origin) restrictions - API may not allow direct browser requests\n';
-                        errorMessage += '• Network connectivity issue\n';
-                        errorMessage += '• Firewall or security software blocking the request\n';
+                            errorMessage += 'Possible causes:\n';
+                            errorMessage += '• CORS (Cross-Origin) restrictions - API may not allow direct browser requests\n';
+                            errorMessage += '• Network connectivity issue\n';
+                            errorMessage += '• Firewall or security software blocking the request\n';
                         errorMessage += '• Invalid API key\n';
-                        errorMessage += '\nPlease check the browser console (F12) for more details.';
+                            errorMessage += '\nPlease check the browser console (F12) for more details.';
                     } else if (error.message && error.message.indexOf('too large') >= 0) {
                         errorMessage += '\n\nTip: The data context is very large. Try asking more specific questions about particular flood extents or barangays.';
                     }
@@ -10354,13 +10586,13 @@
                                 
                                 if (option === '1') {
                                     var currentKey = getGeminiAPIKey();
-                                    var maskedKey = currentKey ? (currentKey.substring(0, 7) + '...' + currentKey.substring(currentKey.length - 4)) : 'Not set';
+                                var maskedKey = currentKey ? (currentKey.substring(0, 7) + '...' + currentKey.substring(currentKey.length - 4)) : 'Not set';
                                     var newKey = prompt('Gemini API Key Configuration\n\nCurrent key: ' + maskedKey + '\n\nEnter your Gemini API key (or leave empty to use default):', currentKey);
-                                    if (newKey !== null) {
+                                if (newKey !== null) {
                                         setGeminiAPIKey(newKey.trim());
-                                        if (newKey.trim() === '') {
-                                            alert('Using default API key.');
-                                        } else {
+                                    if (newKey.trim() === '') {
+                                        alert('Using default API key.');
+                                    } else {
                                             alert('Gemini API key saved successfully!');
                                         }
                                     }
@@ -12170,8 +12402,44 @@
             }
         }
         
+        /**
+         * Gets analysis summary data for a specific flood extent meter
+         * @param {number|string} meter - Flood extent in meters (24-30)
+         * @returns {Object|null} GeoJSON data or null if not found
+         */
+        function getAnalysisSummaryData(meter) {
+            try {
+                var meterNum = parseInt(String(meter).replace(/[^0-9]/g, ''), 10);
+                var dataVarName = '';
+                
+                if (meterNum === 24) {
+                    dataVarName = 'json_24MetersAnalysisSummary_0';
+                } else if (meterNum === 25) {
+                    dataVarName = 'json_25MetersAnalysisSummary_2';
+                } else if (meterNum === 26) {
+                    dataVarName = 'json_26MetersAnalysisSummary_4';
+                } else if (meterNum === 27) {
+                    dataVarName = 'json_27MetersAnalysisSummary_6';
+                } else if (meterNum === 28) {
+                    dataVarName = 'json_28MetersAnalysisSummary_8';
+                } else if (meterNum === 29) {
+                    dataVarName = 'json_29MetersAnalysisSummary_10';
+                } else if (meterNum === 30) {
+                    dataVarName = 'json_30MetersAnalysisSummary_12';
+                }
+                
+                if (dataVarName && window[dataVarName]) {
+                    return window[dataVarName];
+                }
+                
+                return null;
+            } catch (e) {
+                console.error('Error getting analysis summary data:', e);
+                return null;
+            }
+        }
+        
         // Removed functions that feed all data to AI to avoid token limit issues:
-        // - getAnalysisSummaryData()
         // - getAllAggregationSummaryData()
         // - getAllAnalysisSummaryData()
         // - getDB0Data()
@@ -12179,6 +12447,142 @@
         // 
         // The AI now only receives data for the currently selected flood extent and barangays
         // to keep the context size manageable and avoid exceeding token limits.
+        
+        /**
+         * Formats minimum needs object by filtering out zero values and cleaning field names
+         * @param {Object} minimumNeedsObj - Object containing minimum needs data with minimum_needs__ prefix
+         * @returns {Object} Filtered object with only non-zero values and cleaned field names
+         */
+        function formatMinimumNeeds(minimumNeedsObj) {
+            if (!minimumNeedsObj || typeof minimumNeedsObj !== 'object') {
+                return {};
+            }
+            
+            var formatted = {};
+            
+            for (var key in minimumNeedsObj) {
+                if (minimumNeedsObj.hasOwnProperty(key)) {
+                    var value = minimumNeedsObj[key];
+                    // Check if value is non-zero (handle both number and string)
+                    var numValue = parseFloat(value);
+                    if (!isNaN(numValue) && numValue > 0) {
+                        // Remove 'minimum_needs__' prefix and replace underscores with spaces
+                        var cleanKey = key.replace(/^minimum_needs__/, '').replace(/_/g, ' ');
+                        formatted[cleanKey] = numValue;
+                    }
+                }
+            }
+            
+            return formatted;
+        }
+        
+        /**
+         * Extracts and formats aggregation summary insights for a specific flood extent
+         * @param {number|string} meter - Flood extent in meters (24-30)
+         * @returns {Object|null} Formatted insights object or null if data not available
+         */
+        function extractAggregationSummaryInsights(meter) {
+            try {
+                var aggregationData = getAggregationSummaryData(meter);
+                var analysisData = getAnalysisSummaryData(meter);
+                
+                if (!aggregationData && !analysisData) {
+                    return null;
+                }
+                
+                var meterNum = parseInt(String(meter).replace(/[^0-9]/g, ''), 10);
+                var insights = {
+                    floodExtent: meterNum + ' meters',
+                    totalAffectedPopulation: 0,
+                    demographics: {
+                        ageGroups: {
+                            infant: 0,
+                            child: 0,
+                            adult: 0,
+                            elderly: 0
+                        },
+                        gender: {
+                            male: 0,
+                            female: 0
+                        }
+                    },
+                    minimumNeeds: {}
+                };
+                
+                // Process aggregation summary data (per-barangay data)
+                if (aggregationData && aggregationData.features && Array.isArray(aggregationData.features)) {
+                    var totalMinNeeds = {};
+                    
+                    aggregationData.features.forEach(function(feature) {
+                        var props = feature.properties || {};
+                        
+                        // Sum up population data
+                        insights.totalAffectedPopulation += parseFloat(props.population_affected || props.total_affected || 0);
+                        insights.demographics.ageGroups.infant += parseFloat(props.infant || 0);
+                        insights.demographics.ageGroups.child += parseFloat(props.child || 0);
+                        insights.demographics.ageGroups.adult += parseFloat(props.adult || 0);
+                        insights.demographics.ageGroups.elderly += parseFloat(props.elderly || 0);
+                        insights.demographics.gender.male += parseFloat(props.male || 0);
+                        insights.demographics.gender.female += parseFloat(props.female || 0);
+                        
+                        // Aggregate minimum needs
+                        for (var key in props) {
+                            if (key.indexOf('minimum_needs__') === 0) {
+                                if (!totalMinNeeds[key]) {
+                                    totalMinNeeds[key] = 0;
+                                }
+                                totalMinNeeds[key] += parseFloat(props[key] || 0);
+                            }
+                        }
+                    });
+                    
+                    // Format minimum needs (filter zeros)
+                    insights.minimumNeeds = formatMinimumNeeds(totalMinNeeds);
+                }
+                
+                // Process analysis summary data (overall totals - takes precedence if available)
+                if (analysisData && analysisData.features && Array.isArray(analysisData.features) && analysisData.features.length > 0) {
+                    var analysisProps = analysisData.features[0].properties || {};
+                    
+                    // Use analysis summary totals (more accurate overall totals)
+                    if (analysisProps.total_affected) {
+                        insights.totalAffectedPopulation = parseFloat(analysisProps.total_affected);
+                    }
+                    if (analysisProps.infant) {
+                        insights.demographics.ageGroups.infant = parseFloat(analysisProps.infant);
+                    }
+                    if (analysisProps.child) {
+                        insights.demographics.ageGroups.child = parseFloat(analysisProps.child);
+                    }
+                    if (analysisProps.adult) {
+                        insights.demographics.ageGroups.adult = parseFloat(analysisProps.adult);
+                    }
+                    if (analysisProps.elderly) {
+                        insights.demographics.ageGroups.elderly = parseFloat(analysisProps.elderly);
+                    }
+                    if (analysisProps.male) {
+                        insights.demographics.gender.male = parseFloat(analysisProps.male);
+                    }
+                    if (analysisProps.female) {
+                        insights.demographics.gender.female = parseFloat(analysisProps.female);
+                    }
+                    
+                    // Use analysis summary minimum needs (overall totals)
+                    var analysisMinNeeds = {};
+                    for (var key in analysisProps) {
+                        if (key.indexOf('minimum_needs__') === 0) {
+                            analysisMinNeeds[key] = analysisProps[key];
+                        }
+                    }
+                    insights.minimumNeeds = formatMinimumNeeds(analysisMinNeeds);
+                }
+                
+                return insights;
+            } catch (e) {
+                console.error('Error extracting aggregation summary insights:', e);
+                return null;
+            }
+        }
         
         /**
          * Normalizes a name for comparison by removing special characters, spaces, and converting to lowercase.
